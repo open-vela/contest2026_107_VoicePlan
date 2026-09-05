@@ -1,15 +1,402 @@
 <template>
-  <div class="container">
-    <text>Hello QuickApp - contest 2026 team 000</text>
-  </div>
+  <scroll class="page" scroll-y="true">
+    <div class="hero">
+      <text class="brand">VelaPlan</text>
+      <text class="sub">腕上 AI 多场景计划助手</text>
+    </div>
+
+    <div class="vitals">
+      <div class="metric">
+        <text class="metric-label">心率</text>
+        <text class="metric-value">{{ heartRate }} bpm</text>
+      </div>
+      <div class="metric">
+        <text class="metric-label">血氧</text>
+        <text class="metric-value">{{ spo2 }}%</text>
+      </div>
+      <div class="metric">
+        <text class="metric-label">压力</text>
+        <text class="metric-value">{{ stress }}</text>
+      </div>
+    </div>
+
+    <div class="section">
+      <text class="title">选择类别</text>
+      <div class="chips">
+        <text class="{{ selectedCategory === 'daily' ? 'chip active' : 'chip' }}" onclick="setDaily">日常</text>
+        <text class="{{ selectedCategory === 'study' ? 'chip active' : 'chip' }}" onclick="setStudy">学习</text>
+        <text class="{{ selectedCategory === 'fitness' ? 'chip active' : 'chip' }}" onclick="setFitness">健身</text>
+        <text class="{{ selectedCategory === 'mixed' ? 'chip active' : 'chip' }}" onclick="setMixed">混合</text>
+      </div>
+    </div>
+
+    <div class="section">
+      <text class="title">今日目标</text>
+      <input class="input" value="{{ goalText }}" placeholder="说出或输入今天想做什么" onchange="onGoalChange"></input>
+      <text class="voice-status">{{ voiceStatus }}</text>
+      <div class="actions">
+        <text class="button ghost" onclick="fillDemo">示例</text>
+        <text class="button voice" onclick="toggleVoice">{{ recording ? '停止录音' : '语音输入' }}</text>
+      </div>
+      <div class="actions">
+        <text class="button full" onclick="generatePlan">生成计划</text>
+      </div>
+    </div>
+
+    <div class="section">
+      <text class="title">{{ plan.title }}</text>
+      <text class="ai-status">{{ aiStatus }}</text>
+      <text class="summary">{{ plan.summary }}</text>
+      <div class="{{ $item.completed ? 'task done' : 'task' }}" for="{{ plan.tasks }}">
+        <text class="time">{{ $item.time }}</text>
+        <div class="task-main">
+          <text class="{{ $item.completed ? 'task-name done-name' : 'task-name' }}">{{ $item.name }}</text>
+          <text class="task-tip">{{ $item.duration }} 分钟 · {{ $item.tip }}</text>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <text class="title">复盘</text>
+      <text class="summary">{{ plan.reviewQuestion }}</text>
+      <text class="button full" onclick="finishOne">完成一项</text>
+      <text class="review">{{ reviewText }}</text>
+    </div>
+  </scroll>
 </template>
 
-<style>
-.container { flex-direction: column; justify-content: center; align-items: center; }
-</style>
-
 <script>
+import planner from './planner.js';
+import { getRecent, subscribe, unsubscribe, DATA_TYPES } from './health.js';
+import { startRecording, stopRecording } from './voice.js';
+import velaclaw from '@system.velaclaw';
+
+const ALL = [DATA_TYPES.HEART_RATE, DATA_TYPES.SPO2, DATA_TYPES.STRESS];
+
 export default {
-  data: { msg: 'hello' }
-}
+  private: {
+    selectedCategory: 'mixed',
+    goalText: '今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时',
+    heartRate: 76,
+    spo2: 97,
+    stress: 20,
+    completed: 0,
+    reviewText: '等待执行反馈',
+    recording: false,
+    voiceStatus: '点击录音，完成后确认文字',
+    aiBusy: false,
+    aiStatus: '本地规则已就绪',
+    plan: planner.createPlan({
+      category: 'mixed',
+      text: '今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时',
+      vitals: { heartRate: 76, spo2: 97, stress: 20 },
+    }),
+  },
+
+  onReady() {
+    this.refreshHealth();
+    this.subscribeHealth();
+  },
+
+  onDestroy() {
+    ALL.forEach((type) => unsubscribe(type));
+    if (this.recording) {
+      stopRecording();
+    }
+  },
+
+  setDaily() {
+    this.selectedCategory = 'daily';
+  },
+  setStudy() {
+    this.selectedCategory = 'study';
+  },
+  setFitness() {
+    this.selectedCategory = 'fitness';
+  },
+  setMixed() {
+    this.selectedCategory = 'mixed';
+  },
+  onGoalChange(event) {
+    this.goalText = event.value || this.goalText;
+  },
+  fillDemo() {
+    this.goalText = '今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时';
+    this.selectedCategory = 'mixed';
+  },
+  toggleVoice() {
+    if (this.recording) {
+      stopRecording();
+      this.recording = false;
+      this.voiceStatus = '录音已停止，请在输入框确认文字';
+      return;
+    }
+
+    this.recording = true;
+    this.voiceStatus = '录音中，说完后点击停止';
+    try {
+      startRecording(
+        (data) => {
+          this.recording = false;
+          this.voiceStatus = data && data.uri
+            ? '录音完成，请在输入框确认转写文字'
+            : '录音完成，请在输入框确认文字';
+        },
+        (data, code) => {
+          this.recording = false;
+          this.voiceStatus = `录音不可用（${code || '设备不支持'}）`;
+        },
+      );
+    } catch (error) {
+      this.recording = false;
+      this.voiceStatus = '当前设备不支持录音';
+    }
+  },
+  generatePlan() {
+    const payload = {
+      category: this.selectedCategory,
+      text: this.goalText,
+      vitals: {
+        heartRate: this.heartRate,
+        spo2: this.spo2,
+        stress: this.stress,
+      },
+    };
+    this.plan = planner.createPlan(payload);
+    this.completed = 0;
+    this.reviewText = '计划已生成，开始执行吧';
+    if (this.aiBusy) {
+      return;
+    }
+    this.aiBusy = true;
+    this.aiStatus = '正在请求 MiMo AI...';
+    try {
+      velaclaw.ask({
+        query: [
+          '你是 VelaPlan 腕上计划生成引擎。只输出 JSON，不输出 Markdown。',
+          '请按用户类别、目标、时间和健康状态生成短小可执行的一日计划。',
+          '每个任务必须包含 time、type、name、duration、tip；不做医疗诊断。',
+          JSON.stringify(payload),
+        ].join('\n'),
+        success: (data) => this.applyAiPlan(data),
+        fail: () => this.finishAiFallback('AI 暂不可用，已使用本地计划'),
+        complete: () => { this.aiBusy = false; },
+      });
+    } catch (error) {
+      this.finishAiFallback('当前设备未启用 AI，已使用本地计划');
+      this.aiBusy = false;
+    }
+  },
+  applyAiPlan(data) {
+    try {
+      const aiPlan = planner.parsePlanResponse(data && data.reply);
+      this.plan = Object.assign({}, this.plan, aiPlan, {
+        category: this.selectedCategory,
+        vitals: {
+          heartRate: this.heartRate,
+          spo2: this.spo2,
+          stress: this.stress,
+        },
+        source: 'velaclaw',
+      });
+      this.reviewText = 'AI 计划已生成，开始执行吧';
+      this.aiStatus = 'MiMo AI 已生成计划';
+    } catch (error) {
+      this.finishAiFallback('AI 返回格式不可用，已使用本地计划');
+    }
+  },
+  finishAiFallback(message) {
+    this.aiStatus = message;
+    this.reviewText = '计划已生成，开始执行吧';
+  },
+  finishOne() {
+    const total = this.plan.tasks.length || 1;
+    const nextPlan = planner.completeNextTask(this.plan);
+    if (nextPlan !== this.plan) {
+      this.plan = nextPlan;
+      this.completed = Math.min(total, this.completed + 1);
+    }
+    this.reviewText = `已完成 ${this.completed}/${total}，${this.plan.nextAdvice}`;
+  },
+  refreshHealth() {
+    getRecent(ALL).then((list) => list.forEach((sample) => this.applySample(sample)));
+  },
+  subscribeHealth() {
+    ALL.forEach((type) => {
+      subscribe(type, (sample) => this.applySample(sample));
+    });
+  },
+  applySample(sample) {
+    if (!sample || !sample.ok) {
+      return;
+    }
+    if (sample.dataType === DATA_TYPES.HEART_RATE) {
+      this.heartRate = sample.value;
+    } else if (sample.dataType === DATA_TYPES.SPO2) {
+      this.spo2 = sample.value;
+    } else if (sample.dataType === DATA_TYPES.STRESS) {
+      this.stress = sample.value;
+    }
+  },
+};
 </script>
+
+<style>
+.page {
+  width: 390px;
+  height: 450px;
+  flex-direction: column;
+  background-color: #05070a;
+  color: #ffffff;
+}
+.hero {
+  flex-direction: column;
+  padding: 28px 28px 12px;
+}
+.brand {
+  font-size: 44px;
+  font-weight: bold;
+  color: #ffffff;
+}
+.sub {
+  margin-top: 8px;
+  font-size: 22px;
+  color: #9aa4b2;
+}
+.vitals {
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 8px 16px 18px;
+}
+.metric {
+  flex-direction: column;
+  width: 92px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  background-color: #151a22;
+}
+.metric-label {
+  font-size: 18px;
+  color: #8f98a8;
+}
+.metric-value {
+  margin-top: 6px;
+  font-size: 22px;
+  color: #ffffff;
+}
+.section {
+  flex-direction: column;
+  margin: 0 16px 18px;
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #10151d;
+}
+.title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+}
+.summary {
+  margin-top: 10px;
+  font-size: 20px;
+  line-height: 28px;
+  color: #b8c0cc;
+}
+.chips {
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.chip {
+  width: 72px;
+  height: 46px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #232a35;
+  color: #c7cfdb;
+  font-size: 21px;
+  text-align: center;
+}
+.active {
+  background-color: #2f7df6;
+  color: #ffffff;
+}
+.input {
+  width: 300px;
+  height: 58px;
+  margin-top: 14px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background-color: #05070a;
+  color: #ffffff;
+  font-size: 20px;
+}
+.actions {
+  flex-direction: row;
+  margin-top: 14px;
+}
+.button {
+  width: 130px;
+  height: 48px;
+  margin-right: 8px;
+  border-radius: 8px;
+  background-color: #2f7df6;
+  color: #ffffff;
+  font-size: 21px;
+  text-align: center;
+}
+.ghost {
+  background-color: #27303c;
+}
+.voice {
+  background-color: #135f5b;
+}
+.full {
+  width: 300px;
+  margin-top: 14px;
+}
+.voice-status,
+.ai-status {
+  margin-top: 10px;
+  font-size: 17px;
+  color: #7db2ff;
+}
+.task {
+  flex-direction: row;
+  align-items: center;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #171e28;
+}
+.done {
+  background-color: #12352c;
+}
+.time {
+  width: 54px;
+  font-size: 20px;
+  color: #7db2ff;
+}
+.task-main {
+  flex-direction: column;
+  width: 230px;
+}
+.task-name {
+  font-size: 22px;
+  color: #ffffff;
+}
+.done-name {
+  color: #9ee6b8;
+}
+.task-tip {
+  margin-top: 5px;
+  font-size: 17px;
+  color: #96a1b1;
+}
+.review {
+  margin-top: 12px;
+  font-size: 20px;
+  color: #9ee6b8;
+}
+</style>

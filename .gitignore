@@ -1,0 +1,15 @@
+# Build artifacts
+build/
+out/
+app/build/
+app/dist/
+quickapp/**/build/
+quickapp/**/dist/
+quickapp/**/sign/
+quickapp/**/.vscode/
+
+# Local dependencies and secrets
+node_modules/
+.env
+*.rpk
+submission/emulator-current.png

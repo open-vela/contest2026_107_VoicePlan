@@ -1,0 +1,10 @@
+<script>
+export default {
+  onCreate() {
+    console.log('VelaPlan app created');
+  },
+  onDestroy() {
+    console.log('VelaPlan app destroyed');
+  },
+};
+</script>
