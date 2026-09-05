@@ -12,4 +12,5 @@ quickapp/**/.vscode/
 node_modules/
 .env
 *.rpk
+!submission/VelaPlan.release.rpk
 submission/emulator-current.png
