@@ -15,7 +15,7 @@
 
 源码压缩包 `VelaPlan-source.zip` 的 SHA-256：
 
-`91C96EEFD31B1428F3C53A77B6F273510F5D462F4B07D2D81A78E362979BFDE2`
+`1E7172AEDC7B11AF45A7DC779FC404C9B4B3C8E214400F397B4366C103114B57`
 
 项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`。提交前需将真实 AI Coding 日志、ASR 允许链路和 Demo 视频补入材料，不能用占位文件代替。
 
