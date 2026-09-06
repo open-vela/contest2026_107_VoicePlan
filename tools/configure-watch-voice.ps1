@@ -55,8 +55,17 @@ try {
     $json = @{ apiKey = $key; model = 'mimo-v2.5'; apiUrl = $apiUrl } | ConvertTo-Json -Compress
     $temporaryFile = Join-Path ([IO.Path]::GetTempPath()) ("velaplan-mimo-{0}.json" -f [Guid]::NewGuid())
     [IO.File]::WriteAllText($temporaryFile, $json, [Text.UTF8Encoding]::new($false))
-    $pushResult = & $Adb -s $Device push $temporaryFile $deviceFile 2>&1
-    if ($LASTEXITCODE -ne 0) { throw 'Device write failed. Reconnect and retry.' }
+    # adb reports successful transfer progress on stderr. Capture it without
+    # letting PowerShell's Stop preference mistake that progress for failure.
+    $oldErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $null = & $Adb -s $Device push $temporaryFile $deviceFile 2>&1
+        $pushExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $oldErrorActionPreference
+    }
+    if ($pushExitCode -ne 0) { throw 'Device write failed. Reconnect and retry.' }
     $verification = (& $Adb -s $Device shell ls $deviceDirectory) -join "`n"
     if ($verification -notmatch '(?m)^\s*mimo-voice\.json\s*$') { throw 'Configuration file was not found after transfer.' }
     Write-Host 'Configuration written. This does not verify API access or remaining quota.'
