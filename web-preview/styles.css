@@ -54,6 +54,12 @@ label {
   color: #94a3b8;
 }
 
+.field-label {
+  margin: 12px 0 8px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
 .vitals {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -107,6 +113,22 @@ textarea {
   background: #0b1020;
 }
 
+.setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  color: #cbd5e1;
+}
+
+.setting input[type="time"] {
+  padding: 5px;
+  border: 1px solid #263244;
+  border-radius: 6px;
+  color: #fff;
+  background: #0b1020;
+}
+
 .primary {
   width: 100%;
 }
@@ -126,6 +148,10 @@ textarea {
   background: #111827;
 }
 
+.task.done {
+  background: #12352c;
+}
+
 .task time {
   color: #93c5fd;
 }
@@ -138,6 +164,12 @@ textarea {
 .task span {
   color: #9ca3af;
   font-size: 13px;
+}
+
+.task small {
+  display: block;
+  margin-top: 4px;
+  color: #e3c27a;
 }
 
 aside {

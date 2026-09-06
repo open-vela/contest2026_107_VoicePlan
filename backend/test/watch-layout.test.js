@@ -14,6 +14,22 @@ assert.deepStrictEqual(sourceManifest, manifest, 'both build manifests must agre
 assert.strictEqual(manifest.config.designWidth, 390, 'design width must match the 390px page');
 assert.ok(manifest.features.some((feature) => feature.name === 'system.file'));
 assert.match(source, /<scroll\s+class="page"\s+scroll-y="true">/);
+assert.ok(!source.includes('选择类别'), 'the unified plan must not require a category');
+assert.ok(!source.includes('setDaily') && !source.includes('setStudy')
+  && !source.includes('setFitness') && !source.includes('setMixed'),
+  'category actions must be removed from the watch page');
+assert.match(source, /setPeriodToday/);
+assert.match(source, /setPeriodWeek/);
+assert.match(source, /setPeriodMonth/);
+assert.match(source, /setPeriodQuarter/);
+assert.match(source, /重要事项/);
+assert.match(source, /reminderTime/);
+assert.match(source, /天气/);
+assert.match(source, /setWeatherRain/);
+assert.match(source, /心情/);
+assert.match(source, /plan\.context/);
+assert.match(source, /adjustmentReason/);
+assert.match(source, /plan-store\.js/);
 
 function rule(name) {
   const match = source.match(new RegExp(`\\.${name}\\s*\\{([\\s\\S]*?)\\}`));

@@ -2,8 +2,11 @@ const assert = require('assert');
 const { createMimoPlan, parsePlanResponse } = require('../mimo-client');
 
 const payload = {
-  category: 'mixed',
   text: '下午写比赛代码，晚上轻运动，只有3小时',
+  period: 'today',
+  important: true,
+  reminderTime: '18:00',
+  weather: 'rain',
   vitals: { heartRate: 96, spo2: 97, stress: 42 },
 };
 
@@ -34,6 +37,7 @@ const payload = {
   });
 
   assert.strictEqual(aiPlan.source, 'mimo');
+  assert.ok(!Object.prototype.hasOwnProperty.call(aiPlan, 'category'));
   assert.strictEqual(aiPlan.tasks.length, 2);
   assert.strictEqual(aiPlan.tasks[0].duration, 5);
 

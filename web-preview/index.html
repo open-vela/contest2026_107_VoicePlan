@@ -30,20 +30,34 @@
             </div>
           </div>
 
+          <div class="field-label">计划周期</div>
           <div class="chips">
-            <button data-category="daily">日常</button>
-            <button data-category="study">学习</button>
-            <button data-category="fitness">健身</button>
-            <button class="active" data-category="mixed">混合</button>
+            <button class="active" data-period="today">今日</button>
+            <button data-period="week">本周</button>
+            <button data-period="month">本月</button>
+            <button data-period="quarter">本季度</button>
           </div>
 
           <textarea id="goal">今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时</textarea>
+          <label class="setting"><input id="important" type="checkbox" checked /> 重要事项</label>
+          <label class="setting">提醒时间 <input id="reminderTime" type="time" value="18:00" /></label>
+          <div class="field-label">天气场景</div>
+          <div class="chips">
+            <button class="active" data-weather="clear">晴朗</button>
+            <button data-weather="rain">下雨</button>
+            <button data-weather="hot">高温</button>
+            <button data-weather="wind">大风</button>
+          </div>
+          <label class="setting"><input id="moodLow" type="checkbox" /> 主动记录心情低落</label>
           <button class="primary" id="generate">生成计划</button>
 
           <section class="plan">
             <h1 id="title">今日混合计划</h1>
             <p id="summary"></p>
+            <p id="context"></p>
+            <p id="reminder"></p>
             <div id="tasks"></div>
+            <button class="primary" id="finish">完成下一项</button>
           </section>
         </div>
       </section>

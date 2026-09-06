@@ -3,7 +3,7 @@ const https = require('https');
 
 const SYSTEM_PROMPT = [
   '你是腕上计划生成引擎。只输出 JSON，不输出 Markdown。',
-  '根据用户目标、类别、时间和健康状态生成短小可执行的一日计划。',
+  '根据用户目标、计划周期、重要事项、天气、心情和健康状态生成短小可执行的计划。',
   '压力偏高时减少任务密度并加入休息；心率偏高时降低运动强度；血氧偏低时暂停高强度运动。',
   '不做医疗诊断，不给疾病治疗建议。',
 ].join('');
@@ -105,7 +105,11 @@ async function createMimoPlan(payload, config) {
   const plan = parsePlanResponse(message && message.content);
   return {
     ...plan,
-    category: payload && payload.category,
+    period: payload && payload.period,
+    important: Boolean(payload && payload.important),
+    reminderTime: payload && payload.reminderTime,
+    weather: payload && payload.weather,
+    mood: payload && payload.mood,
     vitals: payload && payload.vitals,
     source: 'mimo',
   };

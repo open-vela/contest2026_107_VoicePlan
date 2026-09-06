@@ -9,8 +9,12 @@ Turn a natural-language goal into an executable watch plan. The plan is a schedu
 
 ## Input Contract
 
-- `category`: `daily`, `study`, `fitness`, or `mixed`.
 - `goal`: the user's original text, including available time when stated.
+- `period`: `today`, `week`, `month`, or `quarter`.
+- `important`: whether the first goal/milestone needs priority treatment.
+- `reminderTime`: optional `HH:mm` application reminder.
+- `weather`: `clear`, `rain`, `hot`, or `wind` demo scenario.
+- `mood`: `normal` or `low`, from an explicit user check-in only.
 - `vitals`: numeric `heartRate`, `spo2`, and `stress`; missing values use conservative defaults and must not be presented as measured facts.
 
 ## Output Contract
@@ -20,7 +24,10 @@ Return one JSON object with:
 ```json
 {
   "title": "string",
-  "category": "daily|study|fitness|mixed",
+  "period": "today|week|month|quarter",
+  "important": false,
+  "reminderTime": "",
+  "weather": "clear",
   "summary": "string",
   "riskLevel": "normal|caution",
   "vitals": {"heartRate": 0, "spo2": 0, "stress": 0},
@@ -37,7 +44,7 @@ Every task needs a valid `HH:mm` time, a non-empty name, a positive integer dura
 1. Normalize numeric vitals and retain the actual values in the JSON.
 2. Set `riskLevel` to `caution` when `stress >= 40`, `heartRate >= 110`, or `spo2 < 95`.
 3. For caution, add recovery time. Avoid vigorous exercise; use mobility, easy walking, or rest. Never state a diagnosis or claim that a value proves illness.
-4. Respect the requested category and available time. For `mixed`, interleave the highest-priority work, a break, and optional light activity.
+4. Respect the requested period and available time. Keep today detailed, week plans day-based, and month/quarter plans milestone-based.
 5. Keep the task list short enough to scan on a watch and make the next action obvious.
 
 ## Fallback

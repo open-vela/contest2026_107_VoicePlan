@@ -3,8 +3,12 @@ const planner = require('../quickapp/hello_quickapp/src/pages/index/planner.js')
 const input = process.argv.slice(2).join(' ') || '今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时';
 
 const plan = planner.createPlan({
-  category: 'mixed',
   text: input,
+  period: 'today',
+  important: true,
+  reminderTime: '18:00',
+  weather: 'rain',
+  mood: 'low',
   vitals: {
     heartRate: 96,
     spo2: 97,

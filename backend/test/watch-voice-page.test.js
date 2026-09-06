@@ -4,6 +4,7 @@ const { loadWatchModule, fakeClock } = require('./watch-test-loader');
 function fixture() {
   const clock = fakeClock();
   const calls = { starts: 0, stops: 0, asks: [], uploads: [], deleted: [] };
+  const stored = {};
   let recordSuccess;
   let recordFail;
   const voice = {
@@ -26,10 +27,17 @@ function fixture() {
       DATA_TYPES: {}, unsubscribe() {}, subscribe() {}, getRecent: () => Promise.resolve([]),
     },
     '@system.velaclaw': { ask: (request) => calls.asks.push(request) },
+    '@system.storage': {
+      set(options) { stored[options.key] = options.value; options.success(); },
+      get(options) {
+        if (Object.prototype.hasOwnProperty.call(stored, options.key)) options.success(stored[options.key]);
+        else options.fail('missing', 404);
+      },
+    },
   }, clock).default;
   const page = Object.assign({}, definition, JSON.parse(JSON.stringify(definition.private)));
   if (page.onInit) page.onInit();
-  return { page, calls, clock, recorded: (data) => recordSuccess(data), failed: () => recordFail({}, 1) };
+  return { page, calls, clock, stored, recorded: (data) => recordSuccess(data), failed: () => recordFail({}, 1) };
 }
 
 async function main() {
@@ -93,7 +101,10 @@ async function main() {
     f = fixture();
     f.page.toggleVoice();
     if (action === 'destroy') f.page.onDestroy();
-    if (action === 'demo') f.page.fillDemo();
+    if (action === 'demo') {
+      f.page.fillDemo();
+      f.page.onDestroy();
+    }
     if (action === 'timeout') f.clock.expire();
     if (action === 'fail') f.failed();
     f.recorded({ uri: 'internal://cache/late.wav' });
