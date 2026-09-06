@@ -12,6 +12,9 @@
     "watch": "aiot watch",
     "test:logic": "node ../backend/test/planner.test.js"
   },
+  "dependencies": {
+    "base64-js": "1.5.1"
+  },
   "devDependencies": {
     "@aiot-toolkit/velasim": "^0.1.26",
     "aiot-toolkit": "2.0.5",

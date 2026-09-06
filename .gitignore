@@ -11,6 +11,8 @@ quickapp/**/.vscode/
 # Local dependencies and secrets
 node_modules/
 .env
+mimo-voice.json
+*.voice.local.json
 *.rpk
 !submission/VelaPlan.release.rpk
 submission/emulator-current.png

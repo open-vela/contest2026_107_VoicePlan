@@ -7,6 +7,12 @@ const uxPath = path.join(
   '../../quickapp/hello_quickapp/src/pages/index/index.ux',
 );
 const source = fs.readFileSync(uxPath, 'utf8');
+const manifestRoot = path.resolve(__dirname, '../../quickapp/hello_quickapp');
+const manifest = JSON.parse(fs.readFileSync(path.join(manifestRoot, 'manifest.json'), 'utf8'));
+const sourceManifest = JSON.parse(fs.readFileSync(path.join(manifestRoot, 'src/manifest.json'), 'utf8'));
+assert.deepStrictEqual(sourceManifest, manifest, 'both build manifests must agree');
+assert.strictEqual(manifest.config.designWidth, 390, 'design width must match the 390px page');
+assert.ok(manifest.features.some((feature) => feature.name === 'system.file'));
 assert.match(source, /<scroll\s+class="page"\s+scroll-y="true">/);
 
 function rule(name) {
@@ -53,6 +59,9 @@ const inputWidth = px(input, 'width');
 const inputPadding = Number((input.match(/padding:\s*0\s+(\d+)px/) || [])[1]);
 assert.ok(Number.isFinite(inputPadding), 'missing input horizontal padding');
 assert.ok(inputWidth + 2 * inputPadding <= contentWidth, 'goal input overflows its section');
+assert.match(source, /<text class="goal-preview">{{ goalText }}<\/text>/,
+  'show the complete editable goal, not only a clipped single-line input');
+assert.ok(px(rule('goal-preview'), 'width') <= contentWidth);
 
 const task = rule('task');
 const taskPadding = px(task, 'padding');

@@ -33,10 +33,11 @@
     <div class="section">
       <text class="title">今日目标</text>
       <input class="input" value="{{ goalText }}" placeholder="说出或输入今天想做什么" onchange="onGoalChange"></input>
+      <text class="goal-preview">{{ goalText }}</text>
       <text class="voice-status">{{ voiceStatus }}</text>
       <div class="actions">
         <text class="button ghost" onclick="fillDemo">示例</text>
-        <text class="button voice" onclick="toggleVoice">{{ recording ? '停止录音' : '语音输入' }}</text>
+        <text class="button voice" onclick="toggleVoice">{{ recording ? '停止录音' : (voiceBusy ? '处理中' : '语音输入') }}</text>
       </div>
       <div class="actions">
         <text class="button full" onclick="generatePlan">生成计划</text>
@@ -68,7 +69,8 @@
 <script>
 import planner from './planner.js';
 import { getRecent, subscribe, unsubscribe, DATA_TYPES } from './health.js';
-import { startRecording, stopRecording } from './voice.js';
+import { startRecording, stopRecording, transcribeRecording, discardRecording } from './voice.js';
+import transcription from './transcription.js';
 import velaclaw from '@system.velaclaw';
 
 const ALL = [DATA_TYPES.HEART_RATE, DATA_TYPES.SPO2, DATA_TYPES.STRESS];
@@ -83,7 +85,8 @@ export default {
     completed: 0,
     reviewText: '等待执行反馈',
     recording: false,
-    voiceStatus: '点击录音，完成后确认文字',
+    voiceBusy: false,
+    voiceStatus: '录音将发送至小米 MiMo 云端',
     aiBusy: false,
     aiStatus: '本地规则已就绪',
     plan: planner.createPlan({
@@ -93,66 +96,138 @@ export default {
     }),
   },
 
+  onInit() {
+    this._destroyed = false;
+    this._voiceId = 0;
+    this._aiId = 0;
+  },
+
   onReady() {
     this.refreshHealth();
     this.subscribeHealth();
   },
 
   onDestroy() {
+    this._destroyed = true;
+    this.cancelVoice();
+    this.invalidateAi();
     ALL.forEach((type) => unsubscribe(type));
-    if (this.recording) {
-      stopRecording();
-    }
   },
 
   setDaily() {
+    this.invalidateAi();
     this.selectedCategory = 'daily';
   },
   setStudy() {
+    this.invalidateAi();
     this.selectedCategory = 'study';
   },
   setFitness() {
+    this.invalidateAi();
     this.selectedCategory = 'fitness';
   },
   setMixed() {
+    this.invalidateAi();
     this.selectedCategory = 'mixed';
   },
   onGoalChange(event) {
-    this.goalText = event.value || this.goalText;
+    if (!event || typeof event.value !== 'string' || event.value === this.goalText) return;
+    this.cancelVoice();
+    this.invalidateAi();
+    this.goalText = event.value;
   },
   fillDemo() {
+    this.cancelVoice();
+    this.invalidateAi();
     this.goalText = '今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时';
     this.selectedCategory = 'mixed';
   },
   toggleVoice() {
     if (this.recording) {
-      stopRecording();
       this.recording = false;
-      this.voiceStatus = '录音已停止，请在输入框确认文字';
+      this.voiceStatus = '正在结束录音';
+      try { stopRecording(); } catch (error) {
+        this.cancelVoice();
+        this.voiceStatus = '停止录音失败，请重试';
+      }
       return;
     }
-
+    if (this.voiceBusy || this.aiBusy || this._destroyed) return;
+    const id = ++this._voiceId;
+    const current = () => !this._destroyed && id === this._voiceId;
+    this.voiceBusy = true;
     this.recording = true;
-    this.voiceStatus = '录音中，说完后点击停止';
+    this.voiceStatus = '录音中，最长 8 秒';
+    this._recordTimer = setTimeout(() => {
+      if (!current()) return;
+      this.cancelVoice();
+      this.voiceStatus = '录音未返回，请检查麦克风';
+    }, 12000);
     try {
       startRecording(
         (data) => {
+          const uri = data && data.uri;
+          if (!current()) { discardRecording(uri); return; }
+          clearTimeout(this._recordTimer);
           this.recording = false;
-          this.voiceStatus = data && data.uri
-            ? '录音完成，请在输入框确认转写文字'
-            : '录音完成，请在输入框确认文字';
+          if (!uri) {
+            this.cancelVoice();
+            this.voiceStatus = '录音文件不可用，请重试';
+            return;
+          }
+          this.voiceStatus = 'MiMo 正在转写';
+          this._voiceTask = transcribeRecording(uri);
+          this._voiceTask.promise.then((text) => {
+            if (!current()) return;
+            this._voiceTask = null;
+            this.voiceBusy = false;
+            this.goalText = text;
+            this.voiceStatus = '转写完成，待确认目标';
+          }, (error) => {
+            if (!current()) return;
+            this._voiceTask = null;
+            this.voiceBusy = false;
+            this.voiceStatus = transcription.MESSAGES[error && error.code] || '转写失败，原目标已保留';
+          });
         },
-        (data, code) => {
-          this.recording = false;
-          this.voiceStatus = `录音不可用（${code || '设备不支持'}）`;
+        () => {
+          if (!current()) return;
+          this.cancelVoice();
+          this.voiceStatus = '录音不可用，请检查麦克风';
         },
       );
     } catch (error) {
-      this.recording = false;
+      this.cancelVoice();
       this.voiceStatus = '当前设备不支持录音';
     }
   },
+  cancelVoice() {
+    this._voiceId++;
+    clearTimeout(this._recordTimer);
+    if (this._voiceTask) {
+      this._voiceTask.cancel();
+      this._voiceTask = null;
+    }
+    const wasRecording = this.recording;
+    this.recording = false;
+    if (this.voiceBusy) this.voiceStatus = '语音输入已取消';
+    this.voiceBusy = false;
+    if (wasRecording) {
+      try { stopRecording(); } catch (error) { /* Device may already be stopped. */ }
+    }
+  },
+  invalidateAi() {
+    this._aiId++;
+    clearTimeout(this._aiTimer);
+    if (this.aiBusy) this.aiStatus = '目标已变化，待重新生成';
+    this.aiBusy = false;
+  },
   generatePlan() {
+    if (this.voiceBusy || this.aiBusy || this._destroyed) return;
+    if (!this.goalText.trim()) {
+      this.voiceStatus = '目标不能为空';
+      return;
+    }
     const payload = {
       category: this.selectedCategory,
       text: this.goalText,
@@ -165,11 +240,19 @@ export default {
     this.plan = planner.createPlan(payload);
     this.completed = 0;
     this.reviewText = '计划已生成，开始执行吧';
-    if (this.aiBusy) {
-      return;
-    }
+    const id = ++this._aiId;
+    const finish = (callback) => {
+      if (this._destroyed || id !== this._aiId) return;
+      clearTimeout(this._aiTimer);
+      this._aiId++;
+      this.aiBusy = false;
+      callback();
+    };
     this.aiBusy = true;
     this.aiStatus = '正在请求 MiMo AI...';
+    this._aiTimer = setTimeout(() => finish(() => {
+      this.finishAiFallback('AI 请求超时，已使用本地计划');
+    }), 30000);
     try {
       velaclaw.ask({
         query: [
@@ -178,13 +261,11 @@ export default {
           '每个任务必须包含 time、type、name、duration、tip；不做医疗诊断。',
           JSON.stringify(payload),
         ].join('\n'),
-        success: (data) => this.applyAiPlan(data),
-        fail: () => this.finishAiFallback('AI 暂不可用，已使用本地计划'),
-        complete: () => { this.aiBusy = false; },
+        success: (data) => finish(() => this.applyAiPlan(data)),
+        fail: () => finish(() => this.finishAiFallback('AI 暂不可用，已使用本地计划')),
       });
     } catch (error) {
-      this.finishAiFallback('当前设备未启用 AI，已使用本地计划');
-      this.aiBusy = false;
+      finish(() => this.finishAiFallback('当前设备未启用 AI，已使用本地计划'));
     }
   },
   applyAiPlan(data) {
@@ -335,6 +416,13 @@ export default {
 .actions {
   flex-direction: row;
   margin-top: 14px;
+}
+.goal-preview {
+  width: 300px;
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 26px;
+  color: #b8c0cc;
 }
 .button {
   width: 130px;

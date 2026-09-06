@@ -26,7 +26,7 @@
 
 - 官方仓库的本地 Git 提交、远程推送和官方分支 PR 合入。
 - 已完成一个项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`；仍需按组委会格式把使用记录纳入日志或作品材料。
-- 按允许方式接入 ASR，完成“录音 → 转写 → 计划生成”闭环。
+- MiMo HTTPS 音频转写代码、错误处理和自动测试已补齐，仍缺有效语音密钥的真实联调。配置入口为 `tools/configure-watch-voice.cmd`，技术依据与验收边界见 `docs/10-mimo-voice.md`。
 - 最终提交用 `release.rpk`、5 分钟内演示视频、作品介绍文档。
 
 ## 不建议补齐的重型环境

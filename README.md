@@ -18,7 +18,8 @@ VelaPlan 是基于 openvela 快应用的手表端计划助手。用户选择日�
 - `quickapp/hello_quickapp/src/pages/index/index.ux`：首页交互、计划生成、录音入口和复盘
 - `quickapp/hello_quickapp/src/pages/index/planner.js`：本地规则计划生成、健康状态判断和 AI JSON 解析
 - `quickapp/hello_quickapp/src/pages/index/health.js`：`service.health` 读取与订阅
-- `quickapp/hello_quickapp/src/pages/index/voice.js`：`system.record` 录音封装
+- `quickapp/hello_quickapp/src/pages/index/voice.js`：录音、文件与网络的平台适配
+- `quickapp/hello_quickapp/src/pages/index/transcription.js`：MiMo 音频转写、请求校验与超时清理
 - `backend/`：本地预览服务、MiMo Chat Completions 客户端和测试
 - `board/contest_board/`：开发板展示用骨架，不是当前主线
 - `web-preview/`：浏览器端流程预演
@@ -61,7 +62,9 @@ npm run release
 
 ## 五、输入说明
 
-应用已接入官方 `system.record` 录音接口，按钮可以在设备上采集一段 WAV 录音。当前版本在录音结束后保留输入框作为文字确认入口；最终提交前必须根据组委会允许的方式补齐 ASR 转写，并将转写文字传给计划引擎，不能把“录到音频”表述成“已完成语音识别”。
+应用使用官方 `system.record` 录制最多 8 秒的 WAV，经 `system.file` 读取后，由手表 `system.fetch` 通过 HTTPS 调用 MiMo 多模态转写。返回文字先进入输入框，用户确认或编辑后再生成计划。未配置、断网、超时或无清晰语音时保留原目标，不用示例冒充识别结果。
+
+代码及自动测试已补齐，但真实云端转写必须使用参赛账号的可用密钥完成验收。配置步骤、接口依据和测试边界见 [语音接入说明](docs/10-mimo-voice.md)。
 
 ## 六、MiMo 配置
 
@@ -75,6 +78,8 @@ MIMO_MODEL=<账号支持的模型>
 
 密钥不得写入源码、README、日志或聊天记录。未配置或请求失败时，后端使用本地规则兜底。
 
+手表语音转写使用独立的设备私有配置。启动模拟器并打开应用后，双击 `tools/configure-watch-voice.cmd` 在电脑的隐藏提示中输入密钥。当前文档推荐的多模态模型为 `mimo-v2.5`。配置工具不会把密钥打进 RPK，也不会替代 `ai_agent` 的计划生成配置。
+
 ## 七、演示闭环
 
 展示首页健康数据 → 选择计划类别 → 输入目标 → 生成 AI/本地计划 → 查看健康状态对运动强度的影响 → 完成任务 → 查看复盘和次日建议。
@@ -83,8 +88,8 @@ MIMO_MODEL=<账号支持的模型>
 
 - 图形能力：openvela 快应用页面、滚动布局、类别选择、任务执行和复盘。
 - AI 能力：`@system.velaclaw` 调用设备端 `ai_agent`，失败时使用可解释的本地规则计划。
-- 多媒体能力：`@system.record` 录制 WAV 音频。
+- 多媒体能力：`@system.record` 录制 WAV，`@system.file` 读取，`@system.fetch` 调用 MiMo 转写，用户确认后交给计划引擎。
 - 健康能力：`@service.health` 读取并订阅心率、血氧、压力 Mock 数据。
-- 已保留项目 Skills 沉淀；提交前仍需按官方格式导出真实 AI Coding 日志、完成 ASR 允许链路、录制不超过 5 分钟的视频，并把源码提交到官方 `dev-ai-contest-2026` 分支。
+- 已保留项目 Skills 沉淀；提交前仍需按官方格式导出真实 AI Coding 日志、完成带密钥的语音和 AI 实测、录制不超过 5 分钟的视频，并把最终源码提交到官方 `dev-ai-contest-2026` 分支。
 
 更多实施依据见 `docs/09-official-requirements-execution.md` 和 `docs/04-submission-checklist.md`。

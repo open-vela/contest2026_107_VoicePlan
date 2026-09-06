@@ -19,6 +19,9 @@
       "name": "system.record"
     },
     {
+      "name": "system.file"
+    },
+    {
       "name": "system.velaclaw"
     }
   ],
@@ -29,7 +32,7 @@
   ],
   "config": {
     "logLevel": "log",
-    "designWidth": 480,
+    "designWidth": 390,
     "background": {
       "features": [
         "service.health"
