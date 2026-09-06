@@ -23,6 +23,9 @@
     },
     {
       "name": "system.velaclaw"
+    },
+    {
+      "name": "@system.storage"
     }
   ],
   "permissions": [
