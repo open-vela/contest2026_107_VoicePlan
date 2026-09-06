@@ -1,15 +1,696 @@
 <template>
-  <div class="container">
-    <text>Hello QuickApp - contest 2026 team 000</text>
-  </div>
+  <scroll class="page" scroll-y="true">
+    <div class="hero">
+      <text class="brand">VelaPlan</text>
+      <text class="sub">腕上 AI 计划助手</text>
+    </div>
+
+    <div class="vitals">
+      <div class="metric">
+        <text class="metric-label">心率</text>
+        <text class="metric-value">{{ heartRate }} bpm</text>
+      </div>
+      <div class="metric">
+        <text class="metric-label">血氧</text>
+        <text class="metric-value">{{ spo2 }}%</text>
+      </div>
+      <div class="metric">
+        <text class="metric-label">压力</text>
+        <text class="metric-value">{{ stress }}</text>
+      </div>
+    </div>
+
+    <div class="section">
+      <text class="title">制定计划</text>
+      <text class="label">计划周期</text>
+      <div class="chips">
+        <text class="{{ period === 'today' ? 'chip active' : 'chip' }}" onclick="setPeriodToday">今日</text>
+        <text class="{{ period === 'week' ? 'chip active' : 'chip' }}" onclick="setPeriodWeek">本周</text>
+        <text class="{{ period === 'month' ? 'chip active' : 'chip' }}" onclick="setPeriodMonth">本月</text>
+        <text class="{{ period === 'quarter' ? 'chip active' : 'chip' }}" onclick="setPeriodQuarter">本季度</text>
+      </div>
+
+      <input class="input" value="{{ goalText }}" placeholder="说出或输入目标" onchange="onGoalChange"></input>
+      <text class="goal-preview">{{ goalText }}</text>
+      <text class="voice-status">{{ voiceStatus }}</text>
+      <div class="actions">
+        <text class="button ghost" onclick="fillDemo">示例</text>
+        <text class="button voice" onclick="toggleVoice">{{ recording ? '停止录音' : (voiceBusy ? '处理中' : '语音输入') }}</text>
+      </div>
+
+      <div class="setting-row">
+        <text class="setting-label">重要事项</text>
+        <text class="small-button {{ important ? 'selected' : 'ghost' }}" onclick="toggleImportant">{{ important ? '已标记' : '标记重要' }}</text>
+      </div>
+      <input class="input compact" value="{{ reminderTime }}" placeholder="提醒时间，如 09:00" onchange="onReminderChange"></input>
+
+      <text class="label">天气场景</text>
+      <div class="chips">
+        <text class="chip weather-chip {{ weatherScenario === 'clear' ? 'active' : '' }}" onclick="setWeatherClear">晴朗</text>
+        <text class="chip weather-chip {{ weatherScenario === 'rain' ? 'active' : '' }}" onclick="setWeatherRain">下雨</text>
+        <text class="chip weather-chip {{ weatherScenario === 'hot' ? 'active' : '' }}" onclick="setWeatherHot">高温</text>
+        <text class="chip weather-chip {{ weatherScenario === 'wind' ? 'active' : '' }}" onclick="setWeatherWind">大风</text>
+      </div>
+      <div class="setting-row">
+        <text class="setting-label">心情低落</text>
+        <text class="small-button {{ moodLow ? 'selected' : 'ghost' }}" onclick="toggleMood">{{ moodLow ? '已记录' : '主动记录' }}</text>
+      </div>
+      <text class="hint">健康数据与天气只用于调整建议，不作医疗诊断</text>
+      <text class="button full" onclick="generatePlan">生成计划</text>
+    </div>
+
+    <div class="section">
+      <text class="title">{{ plan.title }}</text>
+      <text class="ai-status">{{ aiStatus }}</text>
+      <text class="summary">{{ plan.summary }}</text>
+      <text class="context">{{ plan.context }}</text>
+      <text class="reminder">{{ reminderMessage }}</text>
+      <text class="health-hint">{{ healthHint }}</text>
+      <text class="progress">已完成 {{ completedCount }}/{{ plan.tasks.length }}</text>
+      <div class="task {{ $item.status === 'done' ? 'done' : '' }}" for="{{ plan.tasks }}">
+        <text class="time">{{ $item.time }}</text>
+        <div class="task-main">
+          <text class="task-day">{{ $item.dayOffset === 0 ? '今天' : ('第' + ($item.dayOffset + 1) + '天') }}</text>
+          <text class="{{ $item.status === 'done' ? 'task-name done-name' : 'task-name' }}">{{ $item.name }}</text>
+          <text class="task-tip">{{ $item.duration }} 分钟 · {{ $item.tip }}</text>
+          <text class="task-adjust">{{ $item.adjustmentReason }}</text>
+          <text class="task-important">{{ $item.priority === 'important' ? '重要 · ' + $item.reminderTime : '' }}</text>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <text class="title">执行与复盘</text>
+      <text class="summary">{{ plan.reviewQuestion }}</text>
+      <div class="actions">
+        <text class="button action-button" onclick="continuePlan">继续执行</text>
+        <text class="button action-button" onclick="adjustPlan">调整</text>
+      </div>
+      <text class="button full defer" onclick="deferNext">延期到明天</text>
+      <text class="review">{{ reviewText }}</text>
+    </div>
+  </scroll>
 </template>
 
-<style>
-.container { flex-direction: column; justify-content: center; align-items: center; }
-</style>
-
 <script>
-export default {
-  data: { msg: 'hello' }
+import planner from './planner.js';
+import planStore from './plan-store.js';
+import { getRecent, subscribe, unsubscribe, DATA_TYPES } from './health.js';
+import { startRecording, stopRecording, transcribeRecording, discardRecording } from './voice.js';
+import transcription from './transcription.js';
+import velaclaw from '@system.velaclaw';
+import storage from '@system.storage';
+
+const ALL = [DATA_TYPES.HEART_RATE, DATA_TYPES.SPO2, DATA_TYPES.STRESS];
+const DEFAULT_GOAL = '今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时';
+
+function normalizedAiTasks(tasks, important, reminderTime) {
+  return (tasks || []).map((item, index) => Object.assign({}, item, {
+    id: item.id || `ai-${index}`,
+    dayOffset: Number.isInteger(item.dayOffset) ? item.dayOffset : 0,
+    priority: item.priority || (important && index === 0 ? 'important' : 'normal'),
+    reminderTime: item.reminderTime || (important && index === 0 ? reminderTime : ''),
+    status: item.status || 'pending',
+    adjustmentReason: item.adjustmentReason || '',
+  }));
 }
+
+export default {
+  private: {
+    period: 'today',
+    goalText: DEFAULT_GOAL,
+    important: false,
+    reminderTime: '09:00',
+    weatherScenario: 'clear',
+    moodLow: false,
+    profile: { age: 20, restingHeartRate: 65 },
+    heartRate: 76,
+    spo2: 97,
+    stress: 20,
+    completedCount: 0,
+    reviewText: '等待执行反馈',
+    reminderMessage: '应用内提醒未启用',
+    healthHint: '健康数据已接入',
+    recording: false,
+    voiceBusy: false,
+    voiceStatus: '录音将发送至 MiMo 云端转写',
+    aiBusy: false,
+    aiStatus: '本地规则已就绪',
+    plan: planner.createPlan({
+      period: 'today',
+      text: DEFAULT_GOAL,
+      weather: 'clear',
+      vitals: { heartRate: 76, spo2: 97, stress: 20 },
+    }),
+  },
+
+  onInit() {
+    this._destroyed = false;
+    this._voiceId = 0;
+    this._aiId = 0;
+    this._reminderTimer = null;
+  },
+
+  onReady() {
+    this.refreshHealth();
+    this.subscribeHealth();
+    this.loadSavedPlan();
+  },
+
+  onDestroy() {
+    this._destroyed = true;
+    this.cancelVoice();
+    this.invalidateAi();
+    clearTimeout(this._reminderTimer);
+    this._reminderTimer = null;
+    ALL.forEach((type) => unsubscribe(type));
+  },
+
+  setPeriod(value) {
+    this.invalidateAi();
+    this.period = value;
+  },
+  setPeriodToday() { this.setPeriod('today'); },
+  setPeriodWeek() { this.setPeriod('week'); },
+  setPeriodMonth() { this.setPeriod('month'); },
+  setPeriodQuarter() { this.setPeriod('quarter'); },
+  toggleImportant() {
+    this.invalidateAi();
+    this.important = !this.important;
+    this.scheduleReminder();
+  },
+  onReminderChange(event) {
+    if (!event || typeof event.value !== 'string') return;
+    this.reminderTime = event.value;
+    this.scheduleReminder();
+  },
+  setWeather(value) {
+    this.invalidateAi();
+    this.weatherScenario = value;
+  },
+  setWeatherClear() { this.setWeather('clear'); },
+  setWeatherRain() { this.setWeather('rain'); },
+  setWeatherHot() { this.setWeather('hot'); },
+  setWeatherWind() { this.setWeather('wind'); },
+  toggleMood() {
+    this.invalidateAi();
+    this.moodLow = !this.moodLow;
+  },
+  onGoalChange(event) {
+    if (!event || typeof event.value !== 'string' || event.value === this.goalText) return;
+    this.cancelVoice();
+    this.invalidateAi();
+    this.goalText = event.value;
+  },
+  fillDemo() {
+    this.cancelVoice();
+    this.invalidateAi();
+    this.goalText = DEFAULT_GOAL;
+    this.period = 'today';
+    this.important = true;
+    this.reminderTime = '18:00';
+    this.weatherScenario = 'rain';
+    this.moodLow = true;
+    this.scheduleReminder();
+  },
+  toggleVoice() {
+    if (this.recording) {
+      this.recording = false;
+      this.voiceStatus = '正在结束录音';
+      try { stopRecording(); } catch (error) {
+        this.cancelVoice();
+        this.voiceStatus = '停止录音失败，请重试';
+      }
+      return;
+    }
+    if (this.voiceBusy || this.aiBusy || this._destroyed) return;
+    const id = ++this._voiceId;
+    const current = () => !this._destroyed && id === this._voiceId;
+    this.voiceBusy = true;
+    this.recording = true;
+    this.voiceStatus = '录音中，最长 8 秒';
+    this._recordTimer = setTimeout(() => {
+      if (!current()) return;
+      this.cancelVoice();
+      this.voiceStatus = '录音未返回，请检查麦克风';
+    }, 12000);
+    try {
+      startRecording(
+        (data) => {
+          const uri = data && data.uri;
+          if (!current()) { discardRecording(uri); return; }
+          clearTimeout(this._recordTimer);
+          this.recording = false;
+          if (!uri) {
+            this.cancelVoice();
+            this.voiceStatus = '录音文件不可用，请重试';
+            return;
+          }
+          this.voiceStatus = 'MiMo 正在转写';
+          this._voiceTask = transcribeRecording(uri);
+          this._voiceTask.promise.then((text) => {
+            if (!current()) return;
+            this._voiceTask = null;
+            this.voiceBusy = false;
+            this.goalText = text;
+            this.voiceStatus = '转写完成，检查目标后生成计划';
+          }, (error) => {
+            if (!current()) return;
+            this._voiceTask = null;
+            this.voiceBusy = false;
+            this.voiceStatus = transcription.MESSAGES[error && error.code] || '转写失败，原目标已保留';
+          });
+        },
+        () => {
+          if (!current()) return;
+          this.cancelVoice();
+          this.voiceStatus = '录音不可用，请检查麦克风';
+        },
+      );
+    } catch (error) {
+      this.cancelVoice();
+      this.voiceStatus = '当前设备不支持录音';
+    }
+  },
+  cancelVoice() {
+    this._voiceId++;
+    clearTimeout(this._recordTimer);
+    if (this._voiceTask) {
+      this._voiceTask.cancel();
+      this._voiceTask = null;
+    }
+    const wasRecording = this.recording;
+    this.recording = false;
+    if (this.voiceBusy) this.voiceStatus = '语音输入已取消';
+    this.voiceBusy = false;
+    if (wasRecording) {
+      try { stopRecording(); } catch (error) { /* Device may already be stopped. */ }
+    }
+  },
+  invalidateAi() {
+    this._aiId++;
+    clearTimeout(this._aiTimer);
+    if (this.aiBusy) this.aiStatus = '设置已变化，待重新生成';
+    this.aiBusy = false;
+  },
+  payload() {
+    return {
+      text: this.goalText,
+      period: this.period,
+      important: this.important,
+      reminderTime: this.reminderTime,
+      weather: this.weatherScenario,
+      mood: this.moodLow ? 'low' : 'normal',
+      profile: this.profile,
+      vitals: { heartRate: this.heartRate, spo2: this.spo2, stress: this.stress },
+    };
+  },
+  generatePlan() {
+    if (this.voiceBusy || this.aiBusy || this._destroyed) return;
+    if (!this.goalText.trim()) {
+      this.voiceStatus = '目标不能为空';
+      return;
+    }
+    const payload = this.payload();
+    this.plan = planner.createPlan(payload);
+    this.completedCount = 0;
+    this.reviewText = '计划已生成，开始执行吧';
+    this.healthHint = '已按当前心率、血氧和压力评估';
+    this.saveCurrentPlan();
+    this.scheduleReminder();
+    const id = ++this._aiId;
+    const finish = (callback) => {
+      if (this._destroyed || id !== this._aiId) return;
+      clearTimeout(this._aiTimer);
+      this._aiId++;
+      this.aiBusy = false;
+      callback();
+    };
+    this.aiBusy = true;
+    this.aiStatus = '正在请求 MiMo AI...';
+    this._aiTimer = setTimeout(() => finish(() => {
+      this.finishAiFallback('AI 请求超时，已使用本地规则计划');
+    }), 30000);
+    try {
+      velaclaw.ask({
+        query: [
+          '你是 VelaPlan 腕上计划生成引擎。只输出 JSON，不输出 Markdown。',
+          '根据目标、周期、重要事项、天气、心情和健康状态生成短小可执行的计划。',
+          '任务必须包含 time、type、name、duration、tip；保留重要事项和提醒信息；不做医疗诊断。',
+          JSON.stringify(payload),
+        ].join('\n'),
+        success: (data) => finish(() => this.applyAiPlan(data)),
+        fail: () => finish(() => this.finishAiFallback('AI 暂不可用，已使用本地规则计划')),
+      });
+    } catch (error) {
+      finish(() => this.finishAiFallback('当前设备未启用 AI，已使用本地规则计划'));
+    }
+  },
+  applyAiPlan(data) {
+    try {
+      const aiPlan = planner.parsePlanResponse(data && data.reply);
+      const aiTasks = normalizedAiTasks(aiPlan.tasks, this.important, this.reminderTime);
+      this.plan = Object.assign({}, this.plan, aiPlan, {
+        period: this.period,
+        important: this.important,
+        reminderTime: this.reminderTime,
+        weather: this.weatherScenario,
+        tasks: aiTasks,
+        source: 'velaclaw',
+      });
+      this.completedCount = 0;
+      this.saveCurrentPlan();
+      this.reviewText = 'AI 计划已生成，开始执行吧';
+      this.aiStatus = 'MiMo AI 已生成计划';
+    } catch (error) {
+      this.finishAiFallback('AI 返回格式不可用，已使用本地规则计划');
+    }
+  },
+  finishAiFallback(message) {
+    this.aiStatus = message;
+    this.saveCurrentPlan();
+    this.reviewText = '计划已生成，开始执行吧';
+  },
+  finishOne() {
+    const total = this.plan.tasks.length || 1;
+    const nextPlan = planner.completeNextTask(this.plan);
+    if (nextPlan !== this.plan) {
+      this.plan = nextPlan;
+      this.completedCount = this.plan.tasks.filter((item) => item.status === 'done').length;
+      this.saveCurrentPlan();
+    }
+    this.reviewText = `已完成 ${this.completedCount}/${total}，${this.plan.nextAdvice}`;
+  },
+  continuePlan() {
+    this.finishOne();
+  },
+  adjustPlan() {
+    this.moodLow = true;
+    this.generatePlan();
+  },
+  deferNext() {
+    const index = this.plan.tasks.findIndex((item) => item.status !== 'done');
+    if (index < 0) {
+      this.reviewText = '当前计划已完成';
+      return;
+    }
+    this.plan = Object.assign({}, this.plan, {
+      tasks: this.plan.tasks.map((item, itemIndex) => itemIndex === index
+        ? Object.assign({}, item, { dayOffset: item.dayOffset + 1, adjustmentReason: '已延期到明天，重要事项仍保留' })
+        : item),
+    });
+    this.saveCurrentPlan();
+    this.reviewText = '下一项已延期到明天，重要事项不会被删除';
+  },
+  saveCurrentPlan() {
+    planStore.savePlan(storage, this.plan).catch(() => {
+      this.reminderMessage = '计划已显示，暂未保存到本机';
+    });
+  },
+  loadSavedPlan() {
+    planStore.loadPlan(storage).then((saved) => {
+      if (this._destroyed || !saved || !Array.isArray(saved.tasks)) return;
+      this.plan = saved;
+      this.goalText = saved.goal || this.goalText;
+      this.period = saved.period || this.period;
+      this.important = Boolean(saved.important);
+      this.reminderTime = saved.reminderTime || this.reminderTime;
+      this.weatherScenario = saved.weather || this.weatherScenario;
+      this.moodLow = saved.mood === 'low';
+      this.completedCount = saved.tasks.filter((item) => item.status === 'done').length;
+      this.reviewText = '已恢复本地计划';
+      this.scheduleReminder();
+    });
+  },
+  scheduleReminder() {
+    clearTimeout(this._reminderTimer);
+    this._reminderTimer = null;
+    if (!this.important || !this.reminderTime) {
+      this.reminderMessage = '重要事项可填写提醒时间';
+      return;
+    }
+    const match = String(this.reminderTime).match(/^(\d{1,2}):(\d{2})$/);
+    if (!match || Number(match[1]) > 23 || Number(match[2]) > 59) {
+      this.reminderMessage = '提醒时间格式应为 HH:MM';
+      return;
+    }
+    const target = new Date();
+    target.setHours(Number(match[1]), Number(match[2]), 0, 0);
+    if (target.getTime() <= Date.now()) target.setDate(target.getDate() + 1);
+    this.reminderMessage = `应用内提醒已设置：${this.reminderTime}`;
+    this._reminderTimer = setTimeout(() => {
+      if (!this._destroyed) this.reminderMessage = `提醒：${this.plan.goal}`;
+    }, target.getTime() - Date.now());
+  },
+  refreshHealth() {
+    getRecent(ALL).then((list) => list.forEach((sample) => this.applySample(sample)));
+  },
+  subscribeHealth() {
+    ALL.forEach((type) => {
+      subscribe(type, (sample) => this.applySample(sample));
+    });
+  },
+  applySample(sample) {
+    if (!sample || !sample.ok) return;
+    if (sample.dataType === DATA_TYPES.HEART_RATE) this.heartRate = sample.value;
+    else if (sample.dataType === DATA_TYPES.SPO2) this.spo2 = sample.value;
+    else if (sample.dataType === DATA_TYPES.STRESS) this.stress = sample.value;
+    this.healthHint = '状态已更新，点击生成计划重新评估';
+  },
+};
 </script>
+
+<style>
+.page {
+  width: 390px;
+  height: 450px;
+  flex-direction: column;
+  background-color: #05070a;
+  color: #ffffff;
+}
+.hero {
+  flex-direction: column;
+  padding: 28px 28px 12px;
+}
+.brand {
+  font-size: 44px;
+  font-weight: bold;
+  color: #ffffff;
+}
+.sub {
+  margin-top: 8px;
+  font-size: 22px;
+  color: #9aa4b2;
+}
+.vitals {
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 8px 16px 18px;
+}
+.metric {
+  flex-direction: column;
+  width: 92px;
+  padding: 12px 8px;
+  border-radius: 8px;
+  background-color: #151a22;
+}
+.metric-label {
+  font-size: 18px;
+  color: #8f98a8;
+}
+.metric-value {
+  margin-top: 6px;
+  font-size: 22px;
+  color: #ffffff;
+}
+.section {
+  flex-direction: column;
+  margin: 0 16px 18px;
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #10151d;
+}
+.title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+}
+.label {
+  margin-top: 14px;
+  font-size: 18px;
+  color: #8f98a8;
+}
+.chips {
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.chip {
+  width: 68px;
+  height: 44px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #232a35;
+  color: #c7cfdb;
+  font-size: 20px;
+  text-align: center;
+}
+.weather-chip {
+  width: 66px;
+}
+.active,
+.selected {
+  background-color: #2f7df6;
+  color: #ffffff;
+}
+.input {
+  width: 300px;
+  height: 56px;
+  margin-top: 14px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background-color: #05070a;
+  color: #ffffff;
+  font-size: 20px;
+}
+.compact {
+  width: 180px;
+}
+.goal-preview {
+  width: 300px;
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 26px;
+  color: #b8c0cc;
+}
+.voice-status,
+.ai-status,
+.hint,
+.context,
+.reminder,
+.health-hint,
+.progress {
+  margin-top: 10px;
+  font-size: 17px;
+  line-height: 24px;
+  color: #7db2ff;
+}
+.actions {
+  flex-direction: row;
+  margin-top: 14px;
+}
+.button,
+.small-button {
+  height: 48px;
+  border-radius: 8px;
+  background-color: #2f7df6;
+  color: #ffffff;
+  font-size: 20px;
+  text-align: center;
+}
+.button {
+  width: 130px;
+  margin-right: 8px;
+}
+.small-button {
+  width: 110px;
+  padding-top: 12px;
+  font-size: 18px;
+}
+.ghost {
+  background-color: #27303c;
+}
+.voice {
+  background-color: #135f5b;
+}
+.full {
+  width: 300px;
+  margin-top: 14px;
+}
+.setting-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 300px;
+  margin-top: 14px;
+}
+.setting-label {
+  font-size: 20px;
+  color: #ffffff;
+}
+.summary {
+  margin-top: 10px;
+  font-size: 20px;
+  line-height: 28px;
+  color: #b8c0cc;
+}
+.context {
+  color: #e3c27a;
+}
+.reminder {
+  color: #9ee6b8;
+}
+.health-hint,
+.progress {
+  color: #c7cfdb;
+}
+.task {
+  flex-direction: row;
+  align-items: center;
+  margin-top: 14px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #171e28;
+}
+.done {
+  background-color: #12352c;
+}
+.time {
+  width: 54px;
+  font-size: 20px;
+  color: #7db2ff;
+}
+.task-main {
+  flex-direction: column;
+  width: 230px;
+}
+.task-day,
+.task-adjust,
+.task-important {
+  font-size: 16px;
+  color: #8f98a8;
+}
+.task-name {
+  font-size: 22px;
+  color: #ffffff;
+}
+.done-name {
+  color: #9ee6b8;
+}
+.task-tip {
+  margin-top: 5px;
+  font-size: 17px;
+  color: #96a1b1;
+}
+.task-adjust {
+  margin-top: 4px;
+  color: #e3c27a;
+}
+.task-important {
+  margin-top: 4px;
+  color: #ffb86b;
+}
+.action-button {
+  width: 142px;
+}
+.defer {
+  background-color: #553a32;
+}
+.review {
+  margin-top: 12px;
+  font-size: 20px;
+  line-height: 28px;
+  color: #9ee6b8;
+}
+</style>

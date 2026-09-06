@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VelaPlan Preview</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="watch">
+        <div class="screen">
+          <header>
+            <strong>VelaPlan</strong>
+            <span>腕上 AI 计划</span>
+          </header>
+
+          <div class="vitals">
+            <div>
+              <span>心率</span>
+              <b id="hr">96</b>
+            </div>
+            <div>
+              <span>血氧</span>
+              <b id="spo2">97</b>
+            </div>
+            <div>
+              <span>压力</span>
+              <b id="stress">42</b>
+            </div>
+          </div>
+
+          <div class="field-label">计划周期</div>
+          <div class="chips">
+            <button class="active" data-period="today">今日</button>
+            <button data-period="week">本周</button>
+            <button data-period="month">本月</button>
+            <button data-period="quarter">本季度</button>
+          </div>
+
+          <textarea id="goal">今天下午要写比赛代码，晚上想运动，但压力有点高，只有3小时</textarea>
+          <label class="setting"><input id="important" type="checkbox" checked /> 重要事项</label>
+          <label class="setting">提醒时间 <input id="reminderTime" type="time" value="18:00" /></label>
+          <div class="field-label">天气场景</div>
+          <div class="chips">
+            <button class="active" data-weather="clear">晴朗</button>
+            <button data-weather="rain">下雨</button>
+            <button data-weather="hot">高温</button>
+            <button data-weather="wind">大风</button>
+          </div>
+          <label class="setting"><input id="moodLow" type="checkbox" /> 主动记录心情低落</label>
+          <button class="primary" id="generate">生成计划</button>
+
+          <section class="plan">
+            <h1 id="title">今日混合计划</h1>
+            <p id="summary"></p>
+            <p id="context"></p>
+            <p id="reminder"></p>
+            <div id="tasks"></div>
+            <button class="primary" id="finish">完成下一项</button>
+          </section>
+        </div>
+      </section>
+
+      <aside>
+        <h2>演示说明</h2>
+        <p>这个页面用于在 AIoT-IDE 装好前预演作品流程。正式作品仍以 openvela 快应用为主。</p>
+        <p>拖动下面的健康数据，看计划如何变化。</p>
+        <label>心率 <input id="hrRange" type="range" min="48" max="182" value="96" /></label>
+        <label>血氧 <input id="spo2Range" type="range" min="90" max="99" value="97" /></label>
+        <label>压力 <input id="stressRange" type="range" min="1" max="49" value="42" /></label>
+      </aside>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

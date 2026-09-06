@@ -1,0 +1,12 @@
+{
+  "name": "velaplan-contest-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Workspace helpers for the VelaPlan openvela contest project",
+  "scripts": {
+    "demo": "node backend/local-plan-demo.js",
+    "preview": "node backend/server.js",
+    "test": "node backend/test/planner.test.js && node backend/test/plan-store.test.js && node backend/test/mimo-client.test.js && node backend/test/watch-layout.test.js && node backend/test/watch-transcription.test.js && node backend/test/watch-voice-page.test.js",
+    "check-env": "powershell -ExecutionPolicy Bypass -File tools/check-env.ps1"
+  }
+}

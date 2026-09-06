@@ -1,148 +1,102 @@
-# contest2026_107_VoicePlan
+# VelaPlan 腕上 AI 多场景计划助手
 
-👋 欢迎参加 **2026 首届 openvela AI 硬件开发者大赛**！
-
-这是组委会为你的队伍创建的**专属参赛仓库**（本仓为样例/模板，队伍编号 `107`；你看到的将是你自己的 `contest2026_<编号>_<队伍名>`）。比赛期间，你的全部参赛代码、打包产物与 AI Coding 日志都提交到这里。
-
-> 本仓既是「代码仓」，又内置了一键拉取整套 openvela 工程的 `repo` 清单（manifest）。你只需跟它打交道，**自始至终只动一个文件夹**。
-
----
-
-## 一、先读这些官方文档
-
-**通用（所有赛道必读）：**
-
-| 文档                                                                                                                                     | 用途                                           |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| [《大赛总览》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/contest_overview.md)                        | 赛道、流程、评分、资源，建议先通读             |
-| [《参赛代码提交指南》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/code_submission_guide.md)           | 仓库获取、提交流程、时间与权限（**以此为准**） |
-| [《AI Coding 日志归集与提交手册》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_coding_log_guide.md) | 如何导出 AI 对话日志并提交到 `logs/`           |
-
-**按你的赛道选读（三选一）：**
-
-| 赛道                  | 教程导航                                                                                                                                                 |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 快应用 / 手表应用创新 | [快应用教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/quickapp/quickapp_guide_index.md)                         |
-| AI 硬件产品创新       | [AI 硬件赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_hardware/ai_hardware_guide_index.md)              |
-| 新硬件适配            | [新硬件适配赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/hardware_porting/hardware_porting_guide_index.md) |
-
----
-
-## 二、第一步：拉取完整工程
-
-用组委会提供的命令一键拉取「openvela 全量源码 + 你的专属仓」：
-
-```bash
-repo init -u https://github.com/open-vela/contest2026_107_VoicePlan \
-  -b dev-ai-contest-2026 -m contest2026_107_VoicePlan.xml
-repo sync -c -j8
-```
-
-同步后，你的整个仓库位于工作区的 `contest2026_107_VoicePlan/`，openvela 全量源码在外层（`nuttx/`、`apps/`、`packages/`、`vendor/` 等）。
-
----
-
-## 三、第二步：在哪里写代码
-
-**只在自己的仓目录 `contest2026_107_VoicePlan/` 里开发。** 不同作品形态放在对应子目录，manifest 会通过 `<linkfile>` 把它们**软链**到 openvela 编译树该在的位置——你不用手动 copy：
-
-| 作品形态 | 你的代码放这里             | 系统自动映射到                                 |
-| -------- | -------------------------- | ---------------------------------------------- |
-| 应用     | `app/hello_app/`           | `packages/demos/contest2026_107_hello_app`     |
-| 快应用   | `quickapp/hello_quickapp/` | `packages/apps/contest2026_107_hello_quickapp` |
-| 板级适配 | `board/contest_board/`     | `vendor/openvela/boards/contest2026_107_board` |
-
-> 用不到的形态目录可以删掉；新增作品时按同样规则加子目录，并在 `contest2026_107_VoicePlan.xml` 里补一条 `<linkfile>` 映射即可。**生产仓库（packages/nuttx/vendor 等）零改动。**
-
-建议仓库目录约定（便于评委定位）：
-
-```text
-app/ | quickapp/ | board/   # 你的作品代码
-logs/                       # AI Coding 日志（主动导出后提交，格式见 logs/README.md）
-README.md                   # 作品说明（提交前请改成你自己的，见第六节）
-```
-
-> 仓内附带了一个 `.gitignore.example`，给出了**编译产物**等不需要进仓的文件示例。如需启用，`cp .gitignore.example .gitignore` 后按需增删即可。**注意 `logs/` 下最终导出的 AI Coding 日志必须提交，不要忽略。**
->
-> `logs/` 的目录结构与提交格式见 [logs/README.md](logs/README.md)。
-
----
-
-## 四、第三步：编译与运行
-
-编译/运行步骤随作品形态不同而不同，请参考你所在赛道的教程导航：
-
-- 快应用 / 手表应用：[快应用教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/quickapp/quickapp_guide_index.md)（含模拟器与开发板部署）。
-- AI 硬件产品创新：[AI 硬件赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_hardware/ai_hardware_guide_index.md)（环境搭建、编译烧录、Skill 开发）。
-- 新硬件适配：[新硬件适配赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/hardware_porting/hardware_porting_guide_index.md)（BSP 移植、最小 NSH 基线）。
-
-子目录已通过 manifest 中的 `<linkfile>` 软链进 openvela 编译树，因此构建在 openvela 工作区**根目录**（即你这个仓的上一级）进行。openvela 使用 `build.sh` 作为统一入口，接收一个 **board config 路径**作为参数：
-
-```bash
-# 进入 openvela 工作区根目录（你的仓的上一级）
-cd ..
-
-# 通用语法：第一个参数是 board config 路径，第二个参数可以是 menuconfig / distclean 等
-./build.sh <board-config-path> [menuconfig|distclean] [-j8]
-```
-
-> 具体的 board config 路径、目标产物、模拟器/真机部署方式请以你所在赛道的教程导航为准。本仓 `app/` `quickapp/` `board/` 三个示例骨架对应的 Kconfig 选项可通过 `menuconfig` 启用。
-
----
-
-## 五、第四步：提交作品
-
-1. **fork** 你的专属仓 → 开发 → `git commit` 并推送 → 向专属仓发起 **Pull Request**，可**自行 review 并合入**（无需等组委会）。
-2. **AI Coding 日志**：与 AI 工具的对话会自动记录到本机 staging（不会自动上传），需你**主动导出/打包**选定会话到仓内 `logs/` 目录后一并提交。详见[《AI Coding 日志归集与提交手册》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_coding_log_guide.md)。
-3. 若需改动 **nuttx 等公共仓库**，不在本仓改，而是 fork 对应公共仓、以 PR 提交到 `dev-ai-contest-2026` 分支，由组委会 review 后合入。
-
-> ⏰ **提交作品截止：9 月 20 日**。截止后统一收回 push 权限，仍可查看 / clone。
->
-> 获奖后再按要求将作品 PR 至 openvela 上游对应仓库（走标准 PR + CI 流程）。
-
-### 关于 PR 与 CLA
-
-- 本仓所有改动通过 **Pull Request** 合入（分支保护强制，可自行合入自己的 PR）。
-- 首次贡献需在[**官网签署 CLA**](https://openvela.com/#/community/cla)；PR 上会自动跑 `cla/signature` 检查，在官网签署成功后，在 PR 评论 `/check-cla` 复检即可通过。
-
----
-
-## 六、提交前：把本 README 改成你的作品说明
-
-本文件目前是组委会给的**使用说明书**。**作品提交前，请把它替换成你自己作品的说明**，方便评委快速了解你做了什么、怎么跑起来。建议至少包含以下内容：
-
-```markdown
-# <你的作品名>
+本仓库基于 openvela 大赛分支 `dev-ai-contest-2026`，当前本地开发分支为 `voiceplan-work`。参赛仓库地址：<https://github.com/open-vela/contest2026_107_VoicePlan>。
 
 ## 一、作品简介
-<一句话/一段话说明这个作品是什么、解决什么问题、亮点在哪>
 
-## 二、选题方向
-<快应用 / 手表应用创新 ｜ AI 硬件产品创新 ｜ 新硬件适配 ｜ 自定方向，并简述理由>
+VelaPlan 是基于 openvela 快应用的手表端计划助手。用户输入一个统一目标，选择今日、本周、本月或本季度周期，并可标记重要事项和提醒；应用结合心率、血氧、压力与内置天气场景生成可执行计划，支持腕上打卡、延期和复盘。
+
+核心差异是把计划从手机待办列表变成“当天状态感知”的腕上行动建议：压力偏高时加入呼吸和休息，心率偏高或血氧偏低时降低运动强度。
+
+## 二、参赛方向
+
+手表应用创新。作品使用 openvela 快应用框架和 `service.health`，目标设备为支持 Vela OS 的手表或手环。
 
 ## 三、目录结构
-<列出你这个仓里各目录/文件的作用，例如：>
-- `app/xxx/`        — <说明>
-- `board/xxx/`      — <说明>
-- `quickapp/xxx/`   — <说明>
-- `logs/`           — AI Coding 日志
-- `docs/` 或其他    — <说明>
 
-## 四、运行方式
-<拉取工程后，如何编译、烧录/部署、运行的完整步骤；最好能让评委照着一步步复现>
+- `quickapp/hello_quickapp/`：正式快应用源码、manifest 和打包工程
+- `quickapp/hello_quickapp/src/pages/index/index.ux`：首页交互、统一计划设置、录音入口、执行和复盘
+- `quickapp/hello_quickapp/src/pages/index/planner.js`：本地规则计划生成、健康状态判断和 AI JSON 解析
+- `quickapp/hello_quickapp/src/pages/index/health.js`：`service.health` 读取与订阅
+- `quickapp/hello_quickapp/src/pages/index/voice.js`：录音、文件与网络的平台适配
+- `quickapp/hello_quickapp/src/pages/index/transcription.js`：MiMo 音频转写、请求校验与超时清理
+- `backend/`：本地预览服务、MiMo Chat Completions 客户端和测试
+- `board/contest_board/`：开发板展示用骨架，不是当前主线
+- `web-preview/`：浏览器端流程预演
+- `docs/`：比赛要求解读、硬件说明、演示脚本和提交清单
+- `docs/skills/health-aware-watch-planning/SKILL.md`：可复用的健康感知计划生成约束
+- `prompts/`：AI 结构化计划输出约束
+- `logs/`：提交前导出的 AI Coding 日志
 
-## 五、AI Coding 使用说明
-<说明本作品如何借助 AI 辅助开发：
-- 在需求拆解 / 方案设计 / 编码 / 调试 / 文档等环节如何与 AI 协作；
-- AI 对开发效率或质量带来的实际帮助。
-完整对话日志见 logs/ 目录>
+## 四、运行与验证
+
+### 1. 单元测试
+
+在仓库根目录执行：
+
+```bash
+npm test
 ```
 
-> 提示：将会根据「作品本身 + 你的 README 说明 + `logs/` 里的 AI Coding 日志」来理解和评估你的作品，README 写清楚很重要。
+### 2. AIoT-IDE 调试
 
----
+1. 用 AIoT-IDE 打开 `quickapp/hello_quickapp/`。
+2. 选择 `vela-miwear-watch-5.0(开发者大赛)` 镜像创建或启动 `VelaPlan_390x450`。
+3. 选择设备并点击调试，安装调试版 RPK。
+4. 按“示例 → 重要事项/提醒 → 下雨 → 生成计划 → 完成一项”的顺序演示。
 
-## 附：仓库命名规范
+应用优先生成本地可解释计划，然后尝试通过 `@system.velaclaw` 调用设备端 AI Agent。AI 不可用或返回格式不符合约束时自动保留本地计划，演示不会中断。健康数据来自 `service.health` Mock 回放；天气为内置场景，提醒为应用内提醒。
 
-`contest2026_<编号>_<队伍名>` — 编号三位零填充；队名 slug（全小写、英文/拼音、连字符）。例：`contest2026_107_VoicePlan`。
-（仓库由组委会统一创建，**每队仅一个仓**，无需自行命名。）
+### 3. 打包
+
+在 AIoT-IDE 中执行开发打包生成 debug RPK；提交前使用 IDE 的“发布”流程生成签名和 `release.rpk`。生产包、作品介绍文档、演示视频和 AI Coding 日志需要与同一版本源码对应。
+
+命令行生产打包命令：
+
+```bash
+cd quickapp/hello_quickapp
+npm run release
+```
+
+生成文件位于 `quickapp/hello_quickapp/dist/`；当前已复制一份到 `submission/VelaPlan.release.rpk` 供最终压缩包使用。`dist/`、`build/`、`sign/` 和 RPK 均被 `.gitignore` 忽略，私钥不会进入仓库。
+
+## 五、输入说明
+
+应用使用官方 `system.record` 录制最多 8 秒的 WAV，经 `system.file` 读取后，由手表 `system.fetch` 通过 HTTPS 调用 MiMo 多模态转写。返回文字先进入输入框，用户确认或编辑后再生成计划。未配置、断网、超时或无清晰语音时保留原目标，不用示例冒充识别结果。
+
+代码及自动测试已补齐，但真实云端转写必须使用参赛账号的可用密钥完成验收。配置步骤、接口依据和测试边界见 [语音接入说明](docs/10-mimo-voice.md)。
+
+## 六、MiMo 配置
+
+`@system.velaclaw` 使用设备端 `ai_agent` 的 MiMo 配置；本地后端预览则使用环境变量：
+
+```text
+MIMO_API_KEY=<本机配置，不要提交>
+MIMO_API_URL=<MiMo Chat Completions 地址>
+MIMO_MODEL=<账号支持的模型>
+```
+
+密钥不得写入源码、README、日志或聊天记录。未配置或请求失败时，后端使用本地规则兜底。
+
+手表语音转写使用独立的设备私有配置。启动模拟器并打开应用后，双击 `tools/configure-watch-voice.cmd` 在电脑的隐藏提示中输入密钥。当前文档推荐的多模态模型为 `mimo-v2.5`。配置工具不会把密钥打进 RPK，也不会替代 `ai_agent` 的计划生成配置。
+
+## 七、计划规则
+
+- 周期：今日展示详细任务，本周展示七天安排，本月/本季度展示阶段节点。
+- 健康：最大心率估计为 `208 - 0.7 × 年龄`，心率警戒演示阈值为 `max(100, 静息心率 + 20)`，多次样本取平均；这些是非医疗启发式规则。
+- 调整：压力偏高加入呼吸放松，心率高于个人基线改为低强度活动，血氧偏低改为恢复安排；下雨/大风改室内，高温缩短户外活动并提示补水。
+- 重要事项和完成状态通过 `@system.storage` 保存在应用本地，延期只移动任务日期，不删除重要事项。
+
+## 八、演示闭环
+
+展示首页健康数据 → 输入统一目标 → 选择周期、重要提醒和天气 → 生成 AI/本地计划 → 查看健康/天气调整原因 → 完成或延期任务 → 查看复盘。
+
+## 八、官方要求对照
+
+- 图形能力：openvela 快应用页面、滚动布局、周期/提醒/天气设置、任务执行和复盘。
+- AI 能力：`@system.velaclaw` 调用设备端 `ai_agent`，失败时使用可解释的本地规则计划。
+- 多媒体能力：`@system.record` 录制 WAV，`@system.file` 读取，`@system.fetch` 调用 MiMo 转写，用户确认后交给计划引擎。
+- 健康能力：`@service.health` 读取并订阅心率、血氧、压力 Mock 数据。
+- 已保留项目 Skills 沉淀；提交前仍需按官方格式导出真实 AI Coding 日志、完成带密钥的语音和 AI 实测、录制不超过 5 分钟的视频，并把最终源码提交到官方 `dev-ai-contest-2026` 分支。
+
+更多实施依据见 `docs/09-official-requirements-execution.md` 和 `docs/04-submission-checklist.md`。
