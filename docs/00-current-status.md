@@ -19,7 +19,7 @@
 ## 当前阶段
 
 - 官方参赛仓库已解压到本目录，快应用已迁移到 `quickapp/hello_quickapp/`。
-- 已初始化本地 Git，当前工作分支为 `voiceplan-work`，最新提交 `500d033` 已推送到远程；PR #1 仍等待官方维护者合入。
+- 已初始化本地 Git，当前工作分支为 `voiceplan-work`，最新提交 `9c09aed` 已推送到远程；PR #1 仍等待官方维护者合入。
 - `logs/Yjwqj/` 有一份格式有效的采集日志，已打包为 `submission/AI-Coding-logs.zip`，但没有覆盖本次全部开发过程；提交前仍需按组委会要求重新导出完整日志。
 
 ## 还缺
