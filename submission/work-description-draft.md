@@ -14,7 +14,7 @@ VelaPlan 腕上 AI 多场景计划助手
 
 <https://github.com/open-vela/contest2026_107_VoicePlan>
 
-源码基于 `dev-ai-contest-2026` 开发。当前本地开发分支为 `voiceplan-work`，提交前需要将最终版本推送并通过官方仓库的 PR 流程合入对应分支。
+源码基于 `dev-ai-contest-2026` 开发。当前开发分支为 `voiceplan-work`；官方仓库 PR #1 为 Open、可合并状态，CLA 检查已通过，仍需维护者审核并合入对应分支。
 
 ## 二、产品目标与应用场景
 
@@ -63,10 +63,10 @@ VelaPlan 腕上 AI 多场景计划助手
 
 AI 参与了需求拆解、赛道选择、技术路线、快应用页面、计划规则、MiMo Prompt、测试、文档和调试问题定位。开发过程保留“先本地规则、再 AI 替换、失败可回退”的工程约束，并通过单元测试验证健康状态与计划输出。
 
-- AI Coding 代码占比：**提交前根据官方导出的日志统计填写，不能估算或虚构**。
-- 使用的 AI 工具、MCP 和 Skills：**提交前按真实日志填写名称和用途；项目 Skills 沉淀见 `docs/skills/health-aware-watch-planning/SKILL.md`**。
-- Token 消耗：**提交前根据 MiMo/AI 工具实际记录填写**；不得在文档或日志中写入 API Key。
-- 完整 AI Coding 日志：按官方格式导出至 `logs/` 后随作品提交。当前仓库只有日志格式说明，尚未包含真实日志。
+- AI Coding 代码占比：约 90%。统计口径为核心快应用代码、测试、构建脚本和文档中由 AI 生成或修改、再由参赛者确认的内容；产品需求、账号操作、语音输入和视频录制由参赛者完成，因此该数值是过程估算，不等同于 Git 行数归属。
+- 使用的 AI 工具、MCP 和 Skills：Codex Desktop 为主开发工具，Claude Code 用于日志链路环境检查；本机命令与应用自动化工具用于 Git、AIoT-IDE、ADB、构建和验证。项目沉淀 Skill 为 `docs/skills/health-aware-watch-planning/SKILL.md`，开发过程还采用系统化调试和测试先行流程。
+- Token 消耗：日志封存时 Codex 为 134,334,527 tokens，Claude Code 环境检查为 3,509 tokens，合计 134,338,036 tokens；原始统计保存在 `logs/Yjwqj/manifest.json`。MiMo 语音暂没有可确认成功调用，不虚构云端 Token。
+- 完整 AI Coding 日志：`logs/Yjwqj/` 包含 2 个真实会话，Codex 长会话由原始 rollout 脱敏转换为组委会 schema；组委会 `validate-log.py` 校验为 `ALL OK`，日志包保存为 `submission/AI-Coding-logs.zip`。
 
 ## 七、运行与验证
 
@@ -76,7 +76,7 @@ AI 参与了需求拆解、赛道选择、技术路线、快应用页面、计�
 npm test
 ```
 
-当前通过的检查包括本地计划规则、MiMo 客户端解析和手表页面布局回归测试。
+截至 2026 年 9 月 17 日，`npm test` 的 planner、plan store、MiMo 客户端、页面布局、语音转写和语音页面生命周期 6 组测试均通过；Codex 日志导出器的 3 个 Python 回归测试通过；`npm run release` 已生成生产 RPK。
 
 用 AIoT-IDE 打开 `quickapp/hello_quickapp/`，选择 `VelaPlan_390x450` 模拟器，点击调试并按“示例 → 重要事项/提醒 → 下雨 → 生成计划 → 完成一项”的顺序演示。提交包使用：
 
@@ -85,12 +85,10 @@ cd quickapp/hello_quickapp
 npm run release
 ```
 
-当前发布包副本为 `submission/VelaPlan.release.rpk`。最终视频须展示健康数据、周期/提醒/天气设置、目标输入、计划生成、健康状态影响、任务完成和复盘，并控制在 5 分钟以内。
+当前发布包副本为 `submission/VelaPlan.release.rpk`，SHA-256 为 `DB5E3665DE346D6BE54EF0CF5CB8164F284BC0EC53143A0B14E8339EDC012082`。最终视频须展示健康数据、周期/提醒/天气设置、目标输入、计划生成、健康状态影响、任务完成和复盘，并控制在 5 分钟以内。
 
 ## 八、合规与提交前事项
 
-- 作品基于 openvela 大赛专属分支 `dev-ai-contest-2026`，遵循 Apache 2.0 要求。
-- 不提交任何 MiMo API Key、私钥、`.env` 或编译缓存。
-- 不宣传医疗诊断能力，不使用未授权素材。
-- 语音唤醒如后续加入，只使用官方指定的“你好，openvela”或“Hello, openvela”。
-- 提交前必须补齐：ASR 允许链路、真实 AI Coding 日志、至少一个有效 Skills 沉淀、完整作品介绍文档、5 分钟内 Demo 视频，以及官方分支 PR 合入记录。
+- 作品基于 openvela 大赛专属分支 `dev-ai-contest-2026`，遵循 Apache 2.0 要求；不提交 MiMo API Key、私钥、`.env` 或编译缓存。
+- 不宣传医疗诊断能力，不使用未授权素材；如后续加入语音唤醒，只使用官方指定的“你好，openvela”或“Hello, openvela”。
+- 当前未完成项只有：使用有效新密钥完成一次真实语音转写、录制不超过 5 分钟的 Demo 视频，以及等待官方维护者合入 PR #1。若录制时语音仍失败，视频必须如实改用文字输入，不得伪造转写成功。

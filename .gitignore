@@ -13,6 +13,10 @@ node_modules/
 .env
 mimo-voice.json
 *.voice.local.json
+__pycache__/
+*.pyc
 *.rpk
 !submission/VelaPlan.release.rpk
 submission/emulator-current.png
+submission/docx-render-*/
+submission/*-待补充.docx

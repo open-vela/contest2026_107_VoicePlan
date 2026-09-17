@@ -36,7 +36,7 @@
 只检查连接与配置文件是否存在，不读取密钥：
 
 ```powershell
-powershell.exe -NoProfile -File tools/configure-watch-voice.ps1 -CheckOnly
+powershell.exe -NoProfile -File tools/configure-watch-voice.ps1 -CheckOnly -Device emulator-5554
 ```
 
 配置包含 `apiKey`、`model`、`apiUrl` 三项。应用仅接受上述两个官方 HTTPS 地址。脚本默认 `mimo-v2.5`，不购买额度、不创建账号、不自动发送测试音频。写入成功只证明本地配置完成，不代表 API 认证成功。
@@ -47,8 +47,8 @@ powershell.exe -NoProfile -File tools/configure-watch-voice.ps1 -CheckOnly
 
 - `npm test`：计划逻辑、计划存储、原文本客户端、布局、音频请求/错误、页面生命周期共 6 组测试。
 - `npm run release`：正式快应用可生成生产 RPK。工具链仍提示未知 `system.velaclaw`，需单独确认镜像的 AI Agent 能力。
-- 2026-09-17：最新生产 RPK 已成功安装到手动启动的 `emulator-5554`，设备私有语音配置存在但未读取内容。390×450 页面、录音自动结束、读取缺失私有配置的错误提示、保留原目标和删除临时录音由自动测试与先前模拟器实测覆盖。当前镜像构建工具仍提示没有可识别的 `system.velaclaw` 原生接口，计划生成仍可能使用本地兜底，不能表述为 AI 已生成。
+- 2026-09-17：最新生产 RPK 已成功安装并运行在 `emulator-5554`，设备私有语音配置存在但未读取内容。模拟器直接访问 MiMo 端点可收到预期的未认证 `HTTP 401`，证明 DNS、TLS 和公网链路可用。390×450 页面、录音自动结束、HTTP 状态诊断、保留原目标和删除临时录音均有自动测试覆盖。
 - 真实 API 验收：配置可用密钥，录一句短目标，检查识别准确性、编辑确认、计划生成及清理结果；断网重试时原目标应保留。
-- 当前没有真实录音请求成功记录，因此不能把设备端 MiMo 语音转写描述为已完成验收。`submission/` 中的 RPK、源码包、日志包和作品文档已更新到当前代码版本，仍缺最终 Demo 视频、完整官方 AI Coding 日志和真实 Token 统计。
+- 当前没有带有效新密钥的真实录音请求成功记录，因此不能把设备端 MiMo 语音转写描述为已完成验收。失败时页面会显示受控分类；普通请求错误额外显示 `HTTP 400` 等状态，便于区分参数、密钥、限流和服务端问题。当前仍缺真实转写验收和最终 Demo 视频。
 
 常见错误：密钥/权限问题显示“MiMo 密钥或模型权限不可用”；限额或限流显示“MiMo 额度不足或请求频繁”；听不清显示“未识别到清晰语音”；超时/断网保留原目标。不要录制他人隐私内容用于测试。

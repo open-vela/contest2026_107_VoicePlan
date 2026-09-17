@@ -97,6 +97,15 @@ async function main() {
   assert.strictEqual(f.page.recording, false);
   assert.ok(!f.page.voiceStatus.includes('完成'), 'do not claim transcription success');
 
+  f = fixture();
+  f.page.toggleVoice();
+  f.recorded({ uri: 'internal://cache/goal.wav' });
+  f.calls.uploads[0].reject(Object.assign(
+    new Error('MiMo 拒绝请求，请检查语音配置（HTTP 400）'), { code: 'REQUEST' },
+  ));
+  await Promise.resolve();
+  assert.strictEqual(f.page.voiceStatus, 'MiMo 拒绝请求，请检查语音配置（HTTP 400）');
+
   for (const action of ['destroy', 'demo', 'timeout', 'fail']) {
     f = fixture();
     f.page.toggleVoice();

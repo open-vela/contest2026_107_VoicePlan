@@ -2,7 +2,7 @@
 
 官方压缩包要求为：作品介绍文档 + 项目代码 + 不超过 5 分钟的 Demo 视频。建议最终放入：
 
-- `VelaPlan-作品介绍文档-待补充.docx`（已生成，提交前需补齐真实日志/Skills/Token 数据）
+- `VelaPlan-作品介绍文档.docx`
 - `VelaPlan-demo.mp4`
 - `VelaPlan.release.rpk`（当前已生成；调试版已在 `emulator-5554` 运行验证）
 - `AI-Coding-logs.zip`
@@ -11,8 +11,8 @@
 
 当前已生成 `VelaPlan.release.rpk`，其 SHA-256 为：
 
-`C9AE86D4B1C7F32D5A37228ECD060EE072FCCD72147B01715426FC44307C6014`
+`DB5E3665DE346D6BE54EF0CF5CB8164F284BC0EC53143A0B14E8339EDC012082`
 
-项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`。提交前需将真实 AI Coding 日志、ASR 允许链路和 Demo 视频补入材料，不能用占位文件代替。
+项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`。AI Coding 日志已按组委会 schema 导出并通过官方校验。当前仍需使用有效新密钥完成一次真实语音验收，并由参赛者加入真实 Demo 视频。
 
-尚未生成的材料不能用占位文件代替：作品介绍文档需要补齐真实 AI Coding 代码占比、MCP/Skills 使用情况和 Token 消耗；日志必须来自官方导出；视频必须与当前 RPK 和源码版本一致。
+禁止用占位视频或伪造转写结果。视频必须与当前 RPK、源码、文档和日志版本一致；录屏中不能出现 API Key、私钥或账号隐私。

@@ -26,7 +26,8 @@ VelaPlan 是基于 openvela 快应用的手表端计划助手。用户输入一�
 - `docs/`：比赛要求解读、硬件说明、演示脚本和提交清单
 - `docs/skills/health-aware-watch-planning/SKILL.md`：可复用的健康感知计划生成约束
 - `prompts/`：AI 结构化计划输出约束
-- `logs/`：提交前导出的 AI Coding 日志
+- `logs/`：按组委会 schema 导出的 AI Coding 日志
+- `tools/export_codex_contest_log.py`：Codex rollout 转组委会 JSONL 的脱敏导出工具
 
 ## 四、运行与验证
 
@@ -91,12 +92,12 @@ MIMO_MODEL=<账号支持的模型>
 
 展示首页健康数据 → 输入统一目标 → 选择周期、重要提醒和天气 → 生成 AI/本地计划 → 查看健康/天气调整原因 → 完成或延期任务 → 查看复盘。
 
-## 八、官方要求对照
+## 九、官方要求对照
 
 - 图形能力：openvela 快应用页面、滚动布局、周期/提醒/天气设置、任务执行和复盘。
 - AI 能力：`@system.velaclaw` 调用设备端 `ai_agent`，失败时使用可解释的本地规则计划。
 - 多媒体能力：`@system.record` 录制 WAV，`@system.file` 读取，`@system.fetch` 调用 MiMo 转写，用户确认后交给计划引擎。
 - 健康能力：`@service.health` 读取并订阅心率、血氧、压力 Mock 数据。
-- 已保留项目 Skills 沉淀；提交前仍需按官方格式导出真实 AI Coding 日志、完成带密钥的语音和 AI 实测、录制不超过 5 分钟的视频，并把最终源码提交到官方 `dev-ai-contest-2026` 分支。
+- 已保留项目 Skills 沉淀；AI Coding 日志已通过组委会 `validate-log.py` 校验。提交前仍需完成有效新密钥的真实语音验收、录制不超过 5 分钟的视频，并等待官方 PR 合入 `dev-ai-contest-2026`。
 
 更多实施依据见 `docs/09-official-requirements-execution.md` 和 `docs/04-submission-checklist.md`。

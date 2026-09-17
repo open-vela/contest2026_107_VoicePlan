@@ -258,7 +258,10 @@ export default {
             if (!current()) return;
             this._voiceTask = null;
             this.voiceBusy = false;
-            this.voiceStatus = transcription.MESSAGES[error && error.code] || '转写失败，原目标已保留';
+            const fallback = transcription.MESSAGES[error && error.code] || '转写失败，原目标已保留';
+            const detail = error && error.message;
+            this.voiceStatus = typeof detail === 'string' && detail.indexOf(fallback) === 0
+              ? detail : fallback;
           });
         },
         () => {

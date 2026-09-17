@@ -120,6 +120,11 @@ async function main() {
     if (code === 'CONFIG' || options.size) assert.strictEqual(f.calls.read, 0);
   }
 
+  f = fixture({ response: { code: 400, data: { error: { message: 'invalid request' } } } });
+  await assert.rejects(f.transcribe(URI).promise, (error) => (
+    error.code === 'REQUEST' && error.message.includes('HTTP 400')
+  ));
+
   f = fixture();
   await assert.rejects(f.transcribe('internal://files/private.json').promise, { code: 'FILE' });
   assert.deepStrictEqual(f.calls.deleted, [], 'never delete a non-recording file');

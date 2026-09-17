@@ -20,8 +20,8 @@ const MESSAGES = {
   CANCELLED: '语音输入已取消',
 };
 
-function voiceError(code) {
-  const error = new Error(MESSAGES[code]);
+function voiceError(code, detail) {
+  const error = new Error(detail ? `${MESSAGES[code]}（${detail}）` : MESSAGES[code]);
   error.code = code;
   return error;
 }
@@ -84,7 +84,7 @@ function parseResponse(result) {
   if (status === 401 || status === 403) throw voiceError('AUTH');
   if (status === 429) throw voiceError('RATE_LIMIT');
   if (status >= 500) throw voiceError('SERVER');
-  if (status !== 200) throw voiceError('REQUEST');
+  if (status !== 200) throw voiceError('REQUEST', `HTTP ${status || 'unknown'}`);
   let body = result.data;
   let transcript;
   try {
@@ -121,7 +121,7 @@ function createTranscriber(options) {
       const guard = (code, callback) => (data) => {
         if (!active) return;
         try { callback(data); } catch (error) {
-          finish(voiceError(error && MESSAGES[error.code] ? error.code : code));
+          finish(error && MESSAGES[error.code] ? error : voiceError(code));
         }
       };
       const fail = (code) => () => finish(voiceError(code));

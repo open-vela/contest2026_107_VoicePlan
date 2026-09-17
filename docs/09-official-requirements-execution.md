@@ -18,9 +18,9 @@ VelaPlan 按“手表应用创新”执行，交付形态为 openvela 快应用�
 
 ## 当前状态与风险
 
-- 当前目录是官方队伍仓库的本地 Git 工作区，但不是完整的 openvela `.repo` 工作区；源码仍需提交并通过官方 `dev-ai-contest-2026` 分支的 PR 流程。
-- 当前 Codex 对话不一定能被官方 AI Coding 日志工具自动采集，最终需要用官方支持方式生成日志或准备可审查的 AI 协作记录。
-- 当前仓库还没有可提交的真实 AI Coding 日志；项目 Skills 沉淀已放在 `docs/skills/health-aware-watch-planning/SKILL.md`，提交前仍需按组委会格式记录其使用情况。
+- 当前目录位于已初始化的 openvela `.repo` 工作区内。官方 PR #1 为 Open、可合并状态，CLA 检查已通过；仍需维护者合入 `dev-ai-contest-2026`。
+- 当前 Codex 原始 rollout 已由仓库内导出器转换为组委会 schema，图片 Base64 被移除、敏感凭证被脱敏，官方 `validate-log.py` 校验为 `ALL OK`。
+- `logs/Yjwqj/` 包含 2 个真实 AI Coding 会话；项目 Skills 沉淀和使用说明已写入 `docs/skills/health-aware-watch-planning/SKILL.md` 与作品材料。
 - 当前已实现“录音 → MiMo HTTPS 转写 → 文字确认”，仍需真实账号与麦克风联调；不能把自动测试中的模拟响应冒充云端识别结果。详见 `docs/10-mimo-voice.md`。
 - 开发板暂时只能作为硬件展示素材；如果强行走底层烧录和移植，时间风险会明显升高。
 
