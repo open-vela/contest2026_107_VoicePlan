@@ -15,8 +15,8 @@
 
 ## 实现流程
 
-1. 点击语音输入，`system.record` 录制最多 8 秒、16 kHz、单声道 WAV；再次点击可提前停止。
-2. 成功回调返回缓存 URI。`system.file` 先检查文件大小，再读取字节，限制为 300 KiB。
+1. 点击语音输入，`system.record` 录制最多 5 秒、16 kHz、单声道 WAV，并显式设置 256000 bps；再次点击可提前停止。
+2. 成功回调返回缓存 URI。`system.file` 先检查文件大小，再读取字节，设备端限制为 1 MiB，避免模拟器 WAV 编码结果超过原先过小的阈值。
 3. 用 `base64-js` 生成 `data:audio/wav;base64,...`，通过 `system.fetch.fetch` 发送非流式 HTTPS 请求。不能把设备的 `internal://` URI 直接发送给云端当音频。
 4. 请求使用 `input_audio`、`thinking: {type: 'disabled'}` 和 `response_format: {type: 'json_object'}`。只读取最终 `message.content` 中的 `{text: "..."}`，不读取推理字段。
 5. 转写文字进入目标输入框，用户检查、编辑，再点击生成计划。转写过程不会自动调用计划引擎。

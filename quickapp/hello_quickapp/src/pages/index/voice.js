@@ -11,9 +11,10 @@ export function discardRecording(uri) {
 
 export function startRecording(onSuccess, onFail) {
   record.start({
-    duration: 8000,
+    duration: 5000,
     sampleRate: 16000,
     numberOfChannels: 1,
+    encodeBitRate: 256000,
     format: 'wav',
     success: onSuccess,
     fail: onFail,

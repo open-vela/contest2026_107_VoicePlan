@@ -18,6 +18,9 @@ wav.writeUInt16LE(2, 32);
 wav.writeUInt16LE(16, 34);
 wav.write('data', 36);
 wav.writeUInt32LE(320, 40);
+const largeWav = Buffer.alloc(400 * 1024);
+largeWav.write('RIFF', 0);
+largeWav.write('WAVE', 8);
 
 function response(text = 'Study for two hours') {
   return { code: 200, data: { choices: [{
@@ -78,6 +81,9 @@ async function main() {
   assert.strictEqual(f.calls.requests[0].url, 'https://token-plan-cn.xiaomimimo.com/v1/chat/completions');
 
   f = fixture({ buffer: wav.buffer.slice(wav.byteOffset, wav.byteOffset + wav.byteLength) });
+  await f.transcribe(URI).promise;
+
+  f = fixture({ size: largeWav.length, buffer: new Uint8Array(largeWav) });
   await f.transcribe(URI).promise;
 
   const cases = [
@@ -147,9 +153,10 @@ async function main() {
   const onSuccess = () => {};
   adapter.startRecording(onSuccess, () => {});
   assert.strictEqual(recordOptions.success, onSuccess);
-  assert.strictEqual(recordOptions.duration, 8000);
+  assert.strictEqual(recordOptions.duration, 5000);
   assert.strictEqual(recordOptions.sampleRate, 16000);
   assert.strictEqual(recordOptions.numberOfChannels, 1);
+  assert.strictEqual(recordOptions.encodeBitRate, 256000);
   assert.strictEqual(recordOptions.format, 'wav');
   assert.strictEqual(recordOptions.frameSize, undefined);
   adapter.stopRecording();

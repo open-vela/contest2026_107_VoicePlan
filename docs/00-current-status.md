@@ -11,7 +11,7 @@
 - 已下载开发者大赛镜像：`vela-miwear-watch-5.0-beta`。
 - 已创建模拟器实例：`VelaPlan_390x450`。
 - 已安装项目依赖，`quickapp/hello_quickapp/` 已能命令行打包生成发布版 RPK。
-- 截至 2026-09-17，发布版 RPK 已重新生成，SHA-256 为 `AA8AEBC436C45F8CB885DA8C48E3683DB40157FE751C9FF0C115B892454CA108`；最新包已通过 ADB 安装到 `emulator-5554`。
+- 截至 2026-09-17，发布版 RPK 已重新生成，SHA-256 为 `C9AE86D4B1C7F32D5A37228ECD060EE072FCCD72147B01715426FC44307C6014`；包含录音兼容性修复的最新包已通过 ADB 安装到 `emulator-5554`，等待真实语音复测。
 - WSL Ubuntu 22.04 已安装。
 - 串口能识别 CH340，开发板通信基础具备。
 - 已有 SF32LB52-DevKit-LCD 与 1.85 英寸 AMOLED 屏幕硬件。
@@ -26,7 +26,7 @@
 
 - 官方分支 PR 合入；当前 GitHub 检查还提示提交使用 noreply 邮箱，CLA 需要用签署时的真实邮箱匹配。
 - 已完成一个项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`；仍需按组委会格式把使用记录纳入日志或作品材料。
-- MiMo HTTPS 音频转写代码、错误处理和自动测试已补齐，仍缺有效语音密钥的真实联调。配置入口为 `tools/configure-watch-voice.cmd`，技术依据与验收边界见 `docs/10-mimo-voice.md`。之前设备配置曾存在，但当前模拟器已关闭，重新测试前需先在 AIoT-IDE 启动它。
+- MiMo HTTPS 音频转写代码、错误处理和自动测试已补齐；本次修复将录音限制为 5 秒、显式设置 256000 bps，并将设备音频文件上限调整为 1 MiB。仍缺有效语音密钥的真实联调。配置入口为 `tools/configure-watch-voice.cmd`，技术依据与验收边界见 `docs/10-mimo-voice.md`。
 - 最终提交用 `release.rpk`、5 分钟内演示视频、作品介绍文档。
 
 ## 不建议补齐的重型环境

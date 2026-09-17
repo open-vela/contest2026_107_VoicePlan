@@ -228,7 +228,7 @@ export default {
     const current = () => !this._destroyed && id === this._voiceId;
     this.voiceBusy = true;
     this.recording = true;
-    this.voiceStatus = '录音中，最长 8 秒';
+    this.voiceStatus = '录音中，最长 5 秒';
     this._recordTimer = setTimeout(() => {
       if (!current()) return;
       this.cancelVoice();

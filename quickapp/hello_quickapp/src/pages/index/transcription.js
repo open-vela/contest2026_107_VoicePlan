@@ -1,7 +1,7 @@
 const { fromByteArray } = require('base64-js');
 
 const CONFIG_URI = 'internal://files/mimo-voice.json';
-const MAX_AUDIO_BYTES = 300 * 1024;
+const MAX_AUDIO_BYTES = 1024 * 1024;
 const API_URL = 'https://api.xiaomimimo.com/v1/chat/completions';
 const TOKEN_PLAN_URL = 'https://token-plan-cn.xiaomimimo.com/v1/chat/completions';
 const MESSAGES = {
