@@ -13,6 +13,6 @@
 
 `DB5E3665DE346D6BE54EF0CF5CB8164F284BC0EC53143A0B14E8339EDC012082`
 
-项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`。AI Coding 日志已按组委会 schema 导出并通过官方校验。当前仍需使用有效新密钥完成一次真实语音验收，并由参赛者加入真实 Demo 视频。
+项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`。AI Coding 日志已按组委会 schema 导出并通过官方校验，设备端 MiMo 真实语音转写已验收通过。当前只需由参赛者加入真实 Demo 视频，并等待官方 PR 合入。
 
 禁止用占位视频或伪造转写结果。视频必须与当前 RPK、源码、文档和日志版本一致；录屏中不能出现 API Key、私钥或账号隐私。

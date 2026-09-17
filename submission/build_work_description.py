@@ -139,7 +139,7 @@ run = subtitle.add_run("2026 首届 openvela AI 硬件开发者大赛 | 作品�
 set_run_font(run, size=12, color="6B7280")
 
 add_heading(doc, "版本与验证结论", 2)
-add_body(doc, "截至 2026 年 9 月 17 日，统一计划快应用、健康数据流程、语音转写代码、AI 兜底计划和发布版 RPK 已完成本地验证。6 组 JavaScript 测试与 3 个日志导出器回归测试通过，发布包已安装并运行在官方模拟器。AI Coding 日志已按组委会 schema 导出并通过官方校验。构建工具仍提示 system.velaclaw 为未知功能，因此演示必须如实保留本地规则兜底提示。当前只缺有效新密钥的真实语音成功记录和参赛者录制的 Demo 视频。")
+add_body(doc, "截至 2026 年 9 月 18 日，快应用、健康数据、真实 MiMo 语音转写、本地规则计划和发布版 RPK 均已验证。6 组 JavaScript 测试、3 个日志导出器测试及官方日志校验通过。system.velaclaw 仍有工具链警告，演示必须保留本地规则兜底提示；当前只缺 Demo 视频。")
 
 add_heading(doc, "一、项目基本信息", 1)
 add_heading(doc, "项目名称", 2)
@@ -194,7 +194,7 @@ add_heading(doc, "六、AI-Native 开发说明", 1)
 add_body(doc, "AI 参与了需求拆解、赛道选择、技术路线、快应用页面、计划规则、MiMo Prompt、测试、文档和调试问题定位。开发过程保留“先本地规则、再 AI 替换、失败可回退”的工程约束，并通过单元测试验证健康状态与计划输出。")
 add_bullet(doc, "AI Coding 代码占比：约 90%。统计口径为核心快应用代码、测试、构建脚本和文档中由 AI 生成或修改、再由参赛者确认的内容；需求、账号操作、语音输入和视频录制由参赛者完成，因此该数值是过程估算，不等同于 Git 行数归属。")
 add_bullet(doc, "使用的 AI 工具、MCP 和 Skills：Codex Desktop 为主开发工具，Claude Code 用于日志链路环境检查；本机命令与应用自动化工具用于 Git、AIoT-IDE、ADB、构建和验证。项目沉淀 Skill 为 docs/skills/health-aware-watch-planning/SKILL.md，并采用系统化调试和测试先行流程。")
-add_bullet(doc, "Token 消耗：日志封存时 Codex 为 134,334,527 tokens，Claude Code 环境检查为 3,509 tokens，合计 134,338,036 tokens；原始统计保存在 logs/Yjwqj/manifest.json。MiMo 语音暂没有可确认成功调用，不虚构云端 Token。")
+add_bullet(doc, "Token 消耗：Codex 134,334,527，Claude Code 3,509，合计 134,338,036 tokens，原始统计见 logs/Yjwqj/manifest.json。MiMo 语音已真实成功调用，音频 Token 和费用以平台账单为准。")
 add_bullet(doc, "完整 AI Coding 日志：logs/Yjwqj/ 包含 2 个真实会话，Codex 长会话由原始 rollout 脱敏转换为组委会 schema；组委会 validate-log.py 校验为 ALL OK，日志包保存为 submission/AI-Coding-logs.zip。")
 
 add_heading(doc, "七、运行与验证", 1)
@@ -205,7 +205,7 @@ code.paragraph_format.space_after = Pt(8)
 set_cell_shading(code, "F2F4F7")
 run = code.add_run("npm test")
 set_run_font(run, color="1F2937")
-add_body(doc, "截至 2026 年 9 月 17 日，npm test 的 planner、plan store、MiMo 客户端、页面布局、语音转写和语音页面生命周期 6 组测试均通过；Codex 日志导出器的 3 个 Python 回归测试通过；npm run release 已生成生产 RPK。")
+add_body(doc, "截至 2026 年 9 月 18 日，npm test 的 planner、plan store、MiMo 客户端、页面布局、语音转写和语音页面生命周期 6 组测试均通过；Codex 日志导出器的 3 个 Python 回归测试通过；npm run release 已生成生产 RPK。")
 add_body(doc, "用 AIoT-IDE 打开 quickapp/hello_quickapp/，选择 VelaPlan_390x450 模拟器，点击调试并按“示例 → 重要事项/提醒 → 下雨 → 生成计划 → 完成一项”的顺序演示。提交包使用：")
 code = doc.add_paragraph()
 code.paragraph_format.left_indent = Inches(0.25)
@@ -213,10 +213,10 @@ code.paragraph_format.space_after = Pt(8)
 set_cell_shading(code, "F2F4F7")
 run = code.add_run("cd quickapp/hello_quickapp\nnpm run release")
 set_run_font(run, color="1F2937")
-add_body(doc, "当前发布包副本为 submission/VelaPlan.release.rpk，SHA-256 为 DB5E3665DE346D6BE54EF0CF5CB8164F284BC0EC53143A0B14E8339EDC012082。最终视频须展示健康数据、周期/提醒/天气设置、目标输入、计划生成、健康状态影响、任务完成和复盘，并控制在 5 分钟以内。")
+add_body(doc, "发布包 submission/VelaPlan.release.rpk 的 SHA-256 为 DB5E3665DE346D6BE54EF0CF5CB8164F284BC0EC53143A0B14E8339EDC012082，设备端真实 MiMo 语音转写已验收。最终视频须展示语音目标、状态感知计划、执行和复盘，并控制在 5 分钟以内。")
 
 add_heading(doc, "八、合规与提交前事项", 1)
-add_body(doc, "作品遵循 Apache 2.0，不提交密钥、私钥、.env、编译缓存或未授权素材，不宣传医疗诊断。尚需真实语音验收、5 分钟内视频及 PR #1 合入；若语音失败，视频如实使用文字输入。")
+add_body(doc, "作品遵循 Apache 2.0，不提交密钥、私钥、.env、编译缓存或未授权素材，不宣传医疗诊断。真实语音转写已经验收；当前只需录制 5 分钟内视频并等待 PR #1 合入。")
 
 footer = section.footer.paragraphs[0]
 footer.alignment = WD_ALIGN_PARAGRAPH.RIGHT

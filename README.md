@@ -98,6 +98,6 @@ MIMO_MODEL=<账号支持的模型>
 - AI 能力：`@system.velaclaw` 调用设备端 `ai_agent`，失败时使用可解释的本地规则计划。
 - 多媒体能力：`@system.record` 录制 WAV，`@system.file` 读取，`@system.fetch` 调用 MiMo 转写，用户确认后交给计划引擎。
 - 健康能力：`@service.health` 读取并订阅心率、血氧、压力 Mock 数据。
-- 已保留项目 Skills 沉淀；AI Coding 日志已通过组委会 `validate-log.py` 校验。提交前仍需完成有效新密钥的真实语音验收、录制不超过 5 分钟的视频，并等待官方 PR 合入 `dev-ai-contest-2026`。
+- 已保留项目 Skills 沉淀；AI Coding 日志已通过组委会 `validate-log.py` 校验，设备端 MiMo 真实语音转写已验收通过。提交前仍需录制不超过 5 分钟的视频，并等待官方 PR 合入 `dev-ai-contest-2026`。
 
 更多实施依据见 `docs/09-official-requirements-execution.md` 和 `docs/04-submission-checklist.md`。
