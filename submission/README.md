@@ -11,7 +11,7 @@
 
 当前已生成 `VelaPlan.release.rpk`，其 SHA-256 为：
 
-`397C9A86911918C7BA22FD70CBA8D4CA539F444A5BD44141ECD4F9090441E111`
+`AA8AEBC436C45F8CB885DA8C48E3683DB40157FE751C9FF0C115B892454CA108`
 
 项目 Skills 沉淀：`docs/skills/health-aware-watch-planning/SKILL.md`。提交前需将真实 AI Coding 日志、ASR 允许链路和 Demo 视频补入材料，不能用占位文件代替。
 
